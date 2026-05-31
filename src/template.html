@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <title>Family Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET & BASE ── */
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :root {
+      --bg:           #0a0e1a;
+      --gold:         #c9973a;
+      --gold-lt:      #e8b96a;
+      --gold-glow:    rgba(201,151,58,0.25);
+      --glass-bg:     rgba(255,255,255,0.07);
+      --glass-bd:     rgba(255,255,255,0.13);
+      --glass-hi:     rgba(255,255,255,0.18);
+      --glass-sh:     0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.14);
+      --w100: rgba(255,255,255,1.00);
+      --w70:  rgba(255,255,255,0.70);
+      --w45:  rgba(255,255,255,0.45);
+      --w20:  rgba(255,255,255,0.20);
+      --w10:  rgba(255,255,255,0.10);
+      --w06:  rgba(255,255,255,0.06);
+      --r-xl: 28px; --r-lg: 20px; --r-md: 14px; --r-sm: 10px; --r-full: 9999px;
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+              "Helvetica Neue", Arial, sans-serif;
+      --hello: 'Dancing Script', cursive;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--w100);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── BACKGROUND ORBS ── */
+    .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); opacity: 0.7;
+      animation: drift 22s ease-in-out infinite;
+    }
+    .orb-1 {
+      width: 560px; height: 560px;
+      background: radial-gradient(circle, rgba(201,151,58,0.28) 0%, transparent 70%);
+      top: -180px; left: -120px; animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 440px; height: 440px;
+      background: radial-gradient(circle, rgba(60,90,220,0.22) 0%, transparent 70%);
+      top: -80px; right: -80px; animation-delay: -8s;
+    }
+    .orb-3 {
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(120,60,200,0.18) 0%, transparent 70%);
+      bottom: -80px; left: 35%; animation-delay: -15s;
+    }
+    @keyframes drift {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33%      { transform: translate(28px,-28px) scale(1.06); }
+      66%      { transform: translate(-18px,18px) scale(0.95); }
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; transform: scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.32s var(--ease), transform 0.32s var(--ease);
+      overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen.active { opacity: 1; transform: scale(1); pointer-events: all; }
+    #screen-family, #screen-person { justify-content: flex-start; padding: 0; }
+
+    /* ── GLASS UTILITY ── */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-bd);
+      border-radius: var(--r-xl);
+      box-shadow: var(--glass-sh);
+    }
+
+    /* ══════════════════════════════════════════
+       SCREEN 1 — WELCOME
+    ══════════════════════════════════════════ */
+    #screen-welcome { gap: 44px; }
+
+    .welcome-head { text-align: center; }
+    .hello-word {
+      font-family: var(--hello);
+      font-size: clamp(68px, 14vw, 108px);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--gold);
+      text-shadow: 0 0 80px rgba(201,151,58,0.45);
+      margin-bottom: 6px;
+    }
+    .portal-label {
+      font-size: clamp(12px, 2.5vw, 16px);
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--w45);
+    }
+
+    .family-cards { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 600px; }
+
+    .family-card {
+      flex: 1; min-width: 200px; max-width: 270px;
+      padding: 36px 24px;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      cursor: pointer; border: none; color: var(--w100);
+      text-align: center; position: relative; overflow: hidden;
+      transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s;
+    }
+    .family-card::after {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(140deg, rgba(201,151,58,0.14) 0%, transparent 55%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .family-card:hover::after, .family-card:focus::after { opacity: 1; }
+    .family-card:hover {
+      transform: translateY(-5px) scale(1.025);
+      box-shadow: 0 20px 56px rgba(0,0,0,0.55),
+                  inset 0 1px 0 rgba(255,255,255,0.2),
+                  0 0 0 1px rgba(201,151,58,0.35);
+      border-color: rgba(201,151,58,0.35);
+    }
+    .family-card:active { transform: scale(0.975); }
+    .family-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+
+    .fc-emoji { font-size: 50px; line-height: 1; position: relative; z-index: 1; }
+    .fc-name  { font-size: 20px; font-weight: 700; position: relative; z-index: 1; }
+    .fc-lock  {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--w45); position: relative; z-index: 1;
+    }
+    .lock-pip { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+
+    /* ══════════════════════════════════════════
+       SCREEN 2 — PASSWORD
+    ══════════════════════════════════════════ */
+    .pw-card {
+      width: 100%; max-width: 390px;
+      padding: 36px 28px;
+      display: flex; flex-direction: column; align-items: stretch; gap: 20px;
+    }
+    .pw-back {
+      align-self: flex-start; background: none; border: none;
+      color: var(--w45); font-family: var(--sans); font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+      padding: 0; transition: color 0.2s;
+    }
+    .pw-back:hover { color: var(--w100); }
+    .pw-back svg { width: 15px; height: 15px; }
+
+    .pw-emoji { text-align: center; font-size: 44px; line-height: 1; }
+    .pw-title { font-size: 22px; font-weight: 700; text-align: center; }
+    .pw-hint  { font-size: 13px; color: var(--w45); text-align: center; }
+
+    .pw-input {
+      background: var(--w06); border: 1px solid var(--w20);
+      border-radius: var(--r-md); padding: 16px 20px;
+      font-size: 18px; font-family: var(--sans); color: var(--w100);
+      text-align: center; letter-spacing: 0.18em; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    .pw-input::placeholder { letter-spacing: 0; font-size: 13px; color: var(--w20); }
+    .pw-input:focus { border-color: rgba(201,151,58,0.6); box-shadow: 0 0 0 3px var(--gold-glow); }
+    .pw-input.shake { animation: shake 0.45s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      22%      { transform: translateX(-10px); }
+      44%      { transform: translateX(10px); }
+      66%      { transform: translateX(-6px); }
+      88%      { transform: translateX(5px); }
+    }
+
+    .btn-unlock {
+      padding: 16px; border: none; border-radius: var(--r-md);
+      background: var(--gold); color: #1a0d00;
+      font-family: var(--sans); font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s, transform 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      letter-spacing: 0.02em;
+    }
+    .btn-unlock:hover { background: var(--gold-lt); transform: translateY(-1px); }
+    .btn-unlock:active { transform: scale(0.98); }
+    .btn-unlock:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .pw-error {
+      font-size: 13px; color: #ff7b7b; text-align: center;
+      min-height: 16px; opacity: 0; transition: opacity 0.2s;
+    }
+    .pw-error.show { opacity: 1; }
+
+    .spinner {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid rgba(26,13,0,0.2); border-top-color: #1a0d00;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════════
+       SCREEN 3 — FAMILY MEMBERS
+    ══════════════════════════════════════════ */
+    .page-inner {
+      width: 100%; max-width: 580px;
+      margin: 0 auto; padding: 20px 16px 40px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    .top-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--r-lg); flex-shrink: 0;
+      position: sticky; top: 0; z-index: 5;
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+    }
+    .tb-name  { flex: 1; font-size: 15px; font-weight: 600; }
+    .tb-timer {
+      font-size: 12px; color: var(--w45);
+      font-variant-numeric: tabular-nums; letter-spacing: 0.03em;
+    }
+    .tb-timer.warn { color: #ffb347; }
+    .tb-timer.crit { color: #ff7b7b; }
+
+    .btn-lock {
+      background: var(--w10); border: 1px solid var(--w20);
+      border-radius: 8px; color: var(--w45); font-family: var(--sans);
+      font-size: 12px; font-weight: 600; padding: 6px 12px;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-lock:hover { background: var(--w20); color: var(--w100); }
+
+    .section-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--w45); padding: 0 4px;
+    }
+
+    .members-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .member-btn {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px;
+      background: var(--glass-bg); border: 1px solid var(--glass-bd);
+      border-radius: var(--r-lg); cursor: pointer;
+      color: var(--w100); width: 100%; text-align: left;
+      font-family: var(--sans); position: relative; overflow: hidden;
+      transition: transform 0.22s var(--ease), border-color 0.22s, box-shadow 0.22s;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    }
+    .member-btn::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(90deg, rgba(201,151,58,0.1) 0%, transparent 55%);
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .member-btn:hover::before { opacity: 1; }
+    .member-btn:hover {
+      border-color: rgba(201,151,58,0.38);
+      transform: translateX(5px);
+      box-shadow: -4px 0 20px rgba(201,151,58,0.12), 4px 4px 20px rgba(0,0,0,0.3);
+    }
+    .member-btn:active { transform: scale(0.99); }
+    .member-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+    .avatar {
+      flex-shrink: 0; border-radius: 50%; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: rgba(0,0,0,0.75);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+      position: relative; z-index: 1;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar.lg { width: 54px; height: 54px; font-size: 18px; }
+    .avatar.xl { width: 62px; height: 62px; font-size: 21px; }
+
+    .member-info { flex: 1; position: relative; z-index: 1; }
+    .member-name { font-size: 16px; font-weight: 600; line-height: 1.2; }
+    .member-sub  { font-size: 12px; color: var(--w45); margin-top: 3px; }
+
+    .chevron {
+      font-size: 22px; color: var(--w20); font-weight: 300; line-height: 1;
+      position: relative; z-index: 1;
+      transition: transform 0.2s, color 0.2s;
+    }
+    .member-btn:hover .chevron { transform: translateX(3px); color: var(--gold); }
+
+    /* ══════════════════════════════════════════
+       SCREEN 4 — PERSON'S DOCUMENTS
+    ══════════════════════════════════════════ */
+    .person-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 20px 18px;
+    }
+    .btn-back {
+      background: var(--w10); border: 1px solid var(--w20);
+      border-radius: 8px; color: var(--w45);
+      font-family: var(--sans); font-size: 13px; font-weight: 500;
+      padding: 8px 14px; cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+      transition: background 0.2s, color 0.2s; flex-shrink: 0;
+    }
+    .btn-back:hover { background: var(--w20); color: var(--w100); }
+    .btn-back svg { width: 14px; height: 14px; }
+
+    .person-meta { flex: 1; }
+    .person-name { font-size: 22px; font-weight: 700; }
+    .person-sub  { font-size: 12px; color: var(--w45); margin-top: 3px; }
+
+    .docs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .doc-btn {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; padding: 22px 14px;
+      background: var(--glass-bg); border: 1px solid var(--glass-bd);
+      border-radius: var(--r-lg); cursor: pointer;
+      color: var(--w100); text-decoration: none; text-align: center;
+      font-family: var(--sans); position: relative; overflow: hidden;
+      min-height: 115px;
+      transition: transform 0.22s var(--ease), border-color 0.22s, box-shadow 0.22s;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    }
+    .doc-btn::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(135deg, rgba(201,151,58,0.15) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .doc-btn:hover::before { opacity: 1; }
+    .doc-btn:hover {
+      border-color: rgba(201,151,58,0.45);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.45);
+      text-decoration: none;
+    }
+    .doc-btn:active { transform: scale(0.97); }
+    .doc-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+    .doc-btn.inactive {
+      opacity: 0.38; cursor: default;
+      pointer-events: none;
+    }
+
+    .doc-icon { font-size: 30px; line-height: 1; position: relative; z-index: 1; }
+    .doc-name {
+      font-size: 13px; font-weight: 500; line-height: 1.3;
+      position: relative; z-index: 1;
+    }
+    .doc-na {
+      font-size: 10px; color: var(--w20);
+      position: relative; z-index: 1;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 500px) {
+      .family-cards { flex-direction: column; align-items: center; }
+      .family-card  { max-width: 340px; width: 100%; }
+      .docs-grid    { grid-template-columns: 1fr 1fr; }
+      .hello-word   { font-size: 72px; }
+    }
+    @media (max-width: 340px) {
+      .docs-grid { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 700px) {
+      .page-inner { padding: 28px 24px 60px; gap: 18px; }
+      .docs-grid  { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Prevent flash on load */
+    body { visibility: visible; }
+  </style>
+</head>
+<body>
+
+<!-- Ambient lighting -->
+<div class="bg-orbs" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 1 — WELCOME
+═══════════════════════════════════ -->
+<div id="screen-welcome" class="screen active" role="main" aria-label="Welcome">
+  <div class="welcome-head">
+    <div class="hello-word">Hello</div>
+    <div class="portal-label">Family Portal</div>
+  </div>
+  <div class="family-cards" role="list">
+    <button class="family-card glass" id="btn-primary" onclick="selectFamily('primary')" role="listitem" aria-label="Primary family — enter password">
+      <span class="fc-emoji">👨‍👩‍👧‍👦</span>
+      <span class="fc-name" id="fc-name-primary">—</span>
+      <span class="fc-lock"><span class="lock-pip"></span>Password protected</span>
+    </button>
+    <button class="family-card glass" id="btn-secondary" onclick="selectFamily('secondary')" role="listitem" aria-label="Secondary family — enter password">
+      <span class="fc-emoji">👨‍👩‍👦</span>
+      <span class="fc-name" id="fc-name-secondary">—</span>
+      <span class="fc-lock"><span class="lock-pip"></span>Password protected</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 2 — PASSWORD
+═══════════════════════════════════ -->
+<div id="screen-password" class="screen" role="main" aria-label="Enter password">
+  <div class="pw-card glass">
+    <button class="pw-back" onclick="goWelcome()" aria-label="Back to welcome">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Back
+    </button>
+    <div class="pw-emoji" id="pw-emoji" aria-hidden="true">🔐</div>
+    <div class="pw-title" id="pw-title">Family</div>
+    <div class="pw-hint">Enter the family password to continue</div>
+    <input
+      type="password"
+      id="pw-input"
+      class="pw-input"
+      placeholder="Password"
+      autocomplete="current-password"
+      aria-label="Family password"
+      onkeydown="onPwKey(event)"
+    />
+    <button class="btn-unlock" id="btn-unlock" onclick="tryUnlock()">
+      Unlock
+    </button>
+    <div class="pw-error" id="pw-error" role="alert" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 3 — FAMILY MEMBERS
+═══════════════════════════════════ -->
+<div id="screen-family" class="screen" role="main" aria-label="Family members">
+  <div class="page-inner">
+    <div class="top-bar">
+      <span class="tb-name" id="tb-name">—</span>
+      <span class="tb-timer" id="tb-timer" aria-label="Session time remaining" aria-live="polite"></span>
+      <button class="btn-lock" onclick="doLock()" aria-label="Lock portal">🔒 Lock</button>
+    </div>
+    <div class="section-eyebrow">Members</div>
+    <div class="members-list" id="members-list" role="list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 4 — PERSON'S DOCUMENTS
+═══════════════════════════════════ -->
+<div id="screen-person" class="screen" role="main" aria-label="Documents">
+  <div class="page-inner">
+    <div class="top-bar">
+      <span class="tb-name" id="tb-name-person">—</span>
+      <span class="tb-timer" id="tb-timer-person" aria-live="polite"></span>
+      <button class="btn-lock" onclick="doLock()" aria-label="Lock portal">🔒 Lock</button>
+    </div>
+    <div class="person-header glass">
+      <button class="btn-back" onclick="goFamily()" aria-label="Back to family list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Back
+      </button>
+      <div class="avatar xl" id="ph-avatar" aria-hidden="true"></div>
+      <div class="person-meta">
+        <div class="person-name" id="ph-name">—</div>
+        <div class="person-sub"  id="ph-sub">—</div>
+      </div>
+    </div>
+    <div class="section-eyebrow">Documents</div>
+    <div class="docs-grid" id="docs-grid" role="list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════ -->
+<script>
+// ─── ENCRYPTED CONFIG (injected by build.js) ──────────────────────────────
+const PCFG = {
+  labels: {
+    primary:   "__PRIMARY_LABEL__",
+    secondary: "__SECONDARY_LABEL__"
+  },
+  primary: {
+    salt: "__PRIMARY_SALT__",
+    iv:   "__PRIMARY_IV__",
+    data: "__PRIMARY_DATA__"
+  },
+  secondary: {
+    salt: "__SECONDARY_SALT__",
+    iv:   "__SECONDARY_IV__",
+    data: "__SECONDARY_DATA__"
+  }
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let cur          = 'welcome';   // current screen id
+let activeFamily = null;        // 'primary' | 'secondary'
+let cache        = {};          // decrypted family data keyed by family id
+let activeMember = null;        // current member object
+let sesTimer     = null;        // setTimeout handle
+let sesEnd       = null;        // timestamp when session expires
+let tickTimer    = null;        // setInterval for countdown display
+
+const SESSION_MS  = 5 * 60 * 1000;   // 5 minutes
+const WARN_MS     = 60 * 1000;        // turn orange at 60s
+const CRIT_MS     = 30 * 1000;        // turn red at 30s
+
+// ─── CRYPTO HELPERS ───────────────────────────────────────────────────────
+function b64(s) { return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+
+async function deriveKey(pw, salt) {
+  const m = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations:600000, hash:'SHA-256' },
+    m, { name:'AES-GCM', length:256 }, false, ['decrypt']
+  );
+}
+
+async function decrypt(encObj, pw) {
+  const key = await deriveKey(pw, b64(encObj.salt));
+  const raw = await crypto.subtle.decrypt(
+    { name:'AES-GCM', iv: b64(encObj.iv) }, key, b64(encObj.data)
+  );
+  return JSON.parse(new TextDecoder().decode(raw));
+}
+
+// ─── DOM HELPERS ──────────────────────────────────────────────────────────
+function esc(s) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(s)));
+  return d.innerHTML;
+}
+
+function initials(name) {
+  return name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase();
+}
+
+function avatarHtml(member, sizeClass) {
+  if (member.photo) {
+    return `<div class="avatar ${sizeClass}" style="background:${esc(member.avatarColor)}">`
+         + `<img src="${esc(member.photo)}" alt="${esc(member.name)}" /></div>`;
+  }
+  return `<div class="avatar ${sizeClass}" style="background:${esc(member.avatarColor)}">`
+       + `${esc(initials(member.name))}</div>`;
+}
+
+// ─── SCREEN TRANSITIONS ───────────────────────────────────────────────────
+function showScreen(id) {
+  if (id === cur) return;
+  document.getElementById('screen-' + cur).classList.remove('active');
+  document.getElementById('screen-' + id).classList.add('active');
+  cur = id;
+  if (id === 'family' || id === 'person') {
+    document.getElementById('screen-' + id).scrollTop = 0;
+  }
+}
+
+// ─── WELCOME INIT ─────────────────────────────────────────────────────────
+(function initWelcome() {
+  document.getElementById('fc-name-primary').textContent   = PCFG.labels.primary   + ' Family';
+  document.getElementById('fc-name-secondary').textContent = PCFG.labels.secondary + ' Family';
+})();
+
+// ─── FAMILY SELECTION → PASSWORD ──────────────────────────────────────────
+function selectFamily(fam) {
+  activeFamily = fam;
+  document.getElementById('pw-emoji').textContent = fam === 'primary' ? '👨‍👩‍👧‍👦' : '👨‍👩‍👦';
+  document.getElementById('pw-title').textContent = PCFG.labels[fam] + ' Family';
+  document.getElementById('pw-input').value = '';
+  hideError();
+  showScreen('password');
+  setTimeout(() => document.getElementById('pw-input').focus(), 360);
+}
+
+function goWelcome() { activeFamily = null; showScreen('welcome'); }
+
+function onPwKey(e) { if (e.key === 'Enter') tryUnlock(); }
+
+function hideError() {
+  const el = document.getElementById('pw-error');
+  el.textContent = '';
+  el.classList.remove('show');
+}
+
+function showError(msg) {
+  const el = document.getElementById('pw-error');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// ─── UNLOCK ───────────────────────────────────────────────────────────────
+async function tryUnlock() {
+  const input = document.getElementById('pw-input');
+  const btn   = document.getElementById('btn-unlock');
+  const pw    = input.value;
+  if (!pw) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+  hideError();
+
+  try {
+    let familyData;
+    try {
+      familyData = await decrypt(PCFG[activeFamily], pw);
+    } catch {
+      input.classList.add('shake');
+      setTimeout(() => input.classList.remove('shake'), 500);
+      showError('Incorrect password — please try again.');
+      input.value = '';
+      input.focus();
+      return;
+    }
+
+    cache[activeFamily] = familyData;
+    input.value = '';
+    renderFamilyScreen(familyData);
+    startSession();
+    showScreen('family');
+
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Unlock';
+  }
+}
+
+// ─── SESSION TIMER ────────────────────────────────────────────────────────
+const ACTIVITY_EVENTS = ['mousedown','mousemove','keydown','touchstart','scroll','click'];
+
+function startSession() {
+  sesEnd = Date.now() + SESSION_MS;
+  clearTimeout(sesTimer); clearInterval(tickTimer);
+  sesTimer = setTimeout(doLock, SESSION_MS);
+  tickTimer = setInterval(tick, 1000);
+  ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, bump, { passive:true }));
+}
+
+function bump() {
+  sesEnd = Date.now() + SESSION_MS;
+  clearTimeout(sesTimer);
+  sesTimer = setTimeout(doLock, SESSION_MS);
+}
+
+function tick() {
+  if (!sesEnd) return;
+  const rem = Math.max(0, Math.ceil((sesEnd - Date.now()) / 1000));
+  const m = Math.floor(rem / 60), s = rem % 60;
+  const txt = m + ':' + String(s).padStart(2,'0');
+  const cls = rem <= 30 ? 'crit' : rem <= 60 ? 'warn' : '';
+
+  ['tb-timer','tb-timer-person'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = txt; el.className = 'tb-timer ' + cls; }
+  });
+}
+
+function stopSession() {
+  clearTimeout(sesTimer); clearInterval(tickTimer);
+  sesEnd = null;
+  ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, bump));
+}
+
+function doLock() {
+  stopSession();
+  cache = {}; activeMember = null;
+  document.getElementById('members-list').innerHTML = '';
+  document.getElementById('docs-grid').innerHTML    = '';
+  showScreen('welcome');
+}
+
+// ─── FAMILY SCREEN ────────────────────────────────────────────────────────
+function renderFamilyScreen(data) {
+  document.getElementById('tb-name').textContent        = data.familyName + ' Family';
+  document.getElementById('tb-name-person').textContent = data.familyName + ' Family';
+
+  const list = document.getElementById('members-list');
+  list.innerHTML = '';
+  data.members.forEach((m, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'member-btn';
+    btn.setAttribute('role','listitem');
+    btn.setAttribute('aria-label', `Open ${m.name}'s documents`);
+    btn.style.transitionDelay = (i * 45) + 'ms';
+    btn.innerHTML = avatarHtml(m,'lg')
+      + `<div class="member-info">`
+      +   `<div class="member-name">${esc(m.name)}</div>`
+      +   `<div class="member-sub">${m.documents.length} documents</div>`
+      + `</div>`
+      + `<div class="chevron" aria-hidden="true">›</div>`;
+    btn.addEventListener('click', () => openMember(m));
+    list.appendChild(btn);
+  });
+}
+
+// ─── PERSON SCREEN ────────────────────────────────────────────────────────
+function openMember(member) {
+  activeMember = member;
+  bump();
+
+  // Avatar
+  const av = document.getElementById('ph-avatar');
+  av.style.background = member.avatarColor;
+  if (member.photo) {
+    av.innerHTML = `<img src="${esc(member.photo)}" alt="${esc(member.name)}" />`;
+  } else {
+    av.textContent = initials(member.name);
+  }
+
+  document.getElementById('ph-name').textContent = member.name;
+
+  const linked = member.documents.filter(d => d.url && d.url !== 'PASTE_LINK_HERE').length;
+  document.getElementById('ph-sub').textContent =
+    linked === member.documents.length
+      ? `${linked} documents linked`
+      : `${linked} of ${member.documents.length} documents linked`;
+
+  // Docs grid
+  const grid = document.getElementById('docs-grid');
+  grid.innerHTML = '';
+  member.documents.forEach(doc => {
+    const hasUrl = doc.url && doc.url !== 'PASTE_LINK_HERE';
+    const el = document.createElement(hasUrl ? 'a' : 'div');
+    el.className  = 'doc-btn' + (hasUrl ? '' : ' inactive');
+    el.setAttribute('role','listitem');
+    if (hasUrl) {
+      el.href   = doc.url;
+      el.target = '_blank';
+      el.rel    = 'noopener noreferrer';
+      el.setAttribute('aria-label', `Open ${doc.name}`);
+    } else {
+      el.setAttribute('aria-label', `${doc.name} — not yet linked`);
+    }
+    el.innerHTML =
+        `<span class="doc-icon" aria-hidden="true">${esc(doc.icon)}</span>`
+      + `<span class="doc-name">${esc(doc.name)}</span>`
+      + (!hasUrl ? `<span class="doc-na">Not linked yet</span>` : '');
+    grid.appendChild(el);
+  });
+
+  showScreen('person');
+}
+
+function goFamily() { bump(); showScreen('family'); }
+
+// ─── BACK BUTTON TRAP (prevent leaving the page on Android/iOS) ────────────
+history.pushState(null, '', location.pathname);
+window.addEventListener('popstate', () => {
+  history.pushState(null, '', location.pathname);
+  if (cur === 'person')   { goFamily();  return; }
+  if (cur === 'family')   { doLock();    return; }
+  if (cur === 'password') { goWelcome(); return; }
+});
+</script>
+</body>
+</html>

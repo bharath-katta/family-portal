@@ -1,0 +1,13 @@
+# ── NEVER commit these to GitHub ──────────────────────────────────────────
+# They contain real names, document links, and family photos.
+# Edit them freely on your Mac — they stay on your Mac only.
+
+src/config.json
+src/photos/
+
+# macOS system files
+.DS_Store
+**/.DS_Store
+
+# Node (not used, but just in case)
+node_modules/
