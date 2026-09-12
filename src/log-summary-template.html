@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Access Log</title>
+<style>
+  :root {
+    --bg: #FAFAF7; --surface: #FFFFFF; --border: rgba(0,0,0,0.08);
+    --text: #1C1C1E; --text-dim: #6B6B70; --accent: #3A7880; --warn-bg: #FFF4E5; --warn-text: #8A5A00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17181A; --surface: #212226; --border: rgba(255,255,255,0.10);
+      --text: #ECECEE; --text-dim: #9A9AA0; --accent: #6FC2CB; --warn-bg: #3A2E12; --warn-text: #E8B84B; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 20px; padding-bottom: 60px;
+  }
+  h1 { font-size: clamp(20px, 4vw, 28px); font-weight: 700; }
+  .meta { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+  .banner {
+    background: var(--warn-bg); color: var(--warn-text); border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; margin: 16px 0 24px;
+  }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .stat .n { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .chart { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; overflow-x: auto; }
+  .chart h2, .table-wrap h2 { font-size: 14px; color: var(--text-dim); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .controls input, .controls select {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; color: var(--text); font-size: 14px;
+  }
+  .controls input { flex: 1; min-width: 160px; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; position: sticky; top: 0; background: var(--surface); }
+  tr:last-child td { border-bottom: none; }
+  .empty { padding: 40px 16px; text-align: center; color: var(--text-dim); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>Access Log</h1>
+<div class="meta" id="generated-at">—</div>
+<div class="banner">This is a temporary, fully offline page. It will be deleted from disk in a few seconds — closing this tab ends the session, and nothing here was sent anywhere.</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="chart">
+  <h2>Unique visitors per day</h2>
+  <svg id="chart-svg" width="100%" height="120" preserveAspectRatio="none"></svg>
+</div>
+
+<div class="table-wrap">
+  <h2 style="padding:16px 16px 0">Events</h2>
+  <div class="controls" style="padding:0 16px">
+    <input id="search" type="text" placeholder="Filter by group, section, city, IP…" />
+    <select id="event-filter">
+      <option value="">All events</option>
+      <option value="page_load">page_load</option>
+      <option value="login_success">login_success</option>
+      <option value="login_failed">login_failed</option>
+      <option value="section_open">section_open</option>
+      <option value="item_open">item_open</option>
+    </select>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr>
+        <th>Time (UTC)</th><th>Event</th><th>Group</th><th>Section</th><th>Kind</th><th>Location</th><th>IP</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="empty-state" hidden>No events match this filter.</div>
+</div>
+
+<script id="log-data" type="application/json">__LOG_DATA__</script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('log-data').textContent);
+  var events = data.events.slice().sort(function (a, b) { return b.ts.localeCompare(a.ts); });
+
+  document.getElementById('generated-at').textContent = 'Generated ' + new Date(data.generatedAt).toLocaleString();
+
+  // ── Stats ──
+  var today = new Date().toISOString().slice(0, 10);
+  var todayRow = data.perDay.find(function (d) { return d.day === today; });
+  var last7 = data.perDay.slice(-7).reduce(function (n, d) { return n + d.unique; }, 0);
+  var stats = [
+    { n: events.length, l: 'Total events' },
+    { n: todayRow ? todayRow.unique : 0, l: 'Unique visitors today' },
+    { n: last7, l: 'Unique visitors, last 7 days' },
+    { n: data.allTimeUnique, l: 'Unique visitors, all-time' },
+  ];
+  var statsEl = document.getElementById('stats');
+  stats.forEach(function (s) {
+    var d = document.createElement('div');
+    d.className = 'stat';
+    var n = document.createElement('div'); n.className = 'n'; n.textContent = s.n;
+    var l = document.createElement('div'); l.className = 'l'; l.textContent = s.l;
+    d.appendChild(n); d.appendChild(l);
+    statsEl.appendChild(d);
+  });
+
+  // ── Chart (plain inline SVG bars, last 30 days) ──
+  var chart = data.perDay.slice(-30);
+  var svg = document.getElementById('chart-svg');
+  if (chart.length) {
+    var max = Math.max.apply(null, chart.map(function (d) { return d.unique; }).concat([1]));
+    var w = 100 / chart.length;
+    svg.setAttribute('viewBox', '0 0 100 40');
+    var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3A7880';
+    chart.forEach(function (d, i) {
+      var h = (d.unique / max) * 34;
+      var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', (i * w + w * 0.15).toFixed(2));
+      rect.setAttribute('y', (38 - h).toFixed(2));
+      rect.setAttribute('width', (w * 0.7).toFixed(2));
+      rect.setAttribute('height', Math.max(h, 0.6).toFixed(2));
+      rect.setAttribute('fill', accent);
+      rect.setAttribute('rx', '0.6');
+      var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+      title.textContent = d.day + ': ' + d.unique + ' unique';
+      rect.appendChild(title);
+      svg.appendChild(rect);
+    });
+  } else {
+    svg.style.display = 'none';
+  }
+
+  // ── Table ──
+  var tbody = document.getElementById('rows');
+  var emptyState = document.getElementById('empty-state');
+  function cell(text) { var td = document.createElement('td'); td.textContent = text || '—'; return td; }
+  function render(list) {
+    tbody.innerHTML = '';
+    list.forEach(function (e) {
+      var tr = document.createElement('tr');
+      tr.appendChild(cell(e.ts.replace('T', ' ').replace(/\.\d+Z$/, '')));
+      var evTd = document.createElement('td');
+      var pill = document.createElement('span'); pill.className = 'pill'; pill.textContent = e.event;
+      evTd.appendChild(pill);
+      tr.appendChild(evTd);
+      tr.appendChild(cell(e.group));
+      tr.appendChild(cell(e.section));
+      tr.appendChild(cell(e.kind));
+      var loc = [e.city, e.region, e.country].filter(Boolean).join(', ');
+      tr.appendChild(cell(loc));
+      tr.appendChild(cell(e.ip));
+      tbody.appendChild(tr);
+    });
+    emptyState.hidden = list.length > 0;
+  }
+
+  function applyFilter() {
+    var q = document.getElementById('search').value.trim().toLowerCase();
+    var ev = document.getElementById('event-filter').value;
+    var filtered = events.filter(function (e) {
+      if (ev && e.event !== ev) return false;
+      if (!q) return true;
+      var hay = [e.group, e.section, e.city, e.region, e.country, e.ip].filter(Boolean).join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+    render(filtered);
+  }
+  document.getElementById('search').addEventListener('input', applyFilter);
+  document.getElementById('event-filter').addEventListener('change', applyFilter);
+  render(events);
+})();
+</script>
+</body>
+</html>

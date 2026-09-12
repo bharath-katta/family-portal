@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
   <meta name="referrer" content="no-referrer" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' blob: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-src blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' blob: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'__LOG_CONNECT_SRC__; frame-ancestors 'none'; base-uri 'none'; form-action 'none';" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#FCF9EA" />
@@ -252,8 +252,6 @@
         radial-gradient(90% 120% at 15% 10%, hsla(var(--g-hue),75%,85%,0.85), transparent 60%),
         radial-gradient(70% 100% at 85% 90%, hsla(calc(var(--g-hue) + 35),70%,82%,0.6), transparent 65%),
         linear-gradient(160deg, var(--g-bg) 0%, var(--g-bg2) 100%);
-      will-change: transform;
-      transition: transform 0.05s linear;
     }
 
     .page-content { position: relative; z-index: 1; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 14px; }
@@ -261,12 +259,10 @@
     .top-bar {
       display: flex; align-items: center; gap: 10px;
       padding: 12px 16px;
-      background: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.94);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
       flex-shrink: 0; position: sticky; top: 16px; z-index: 5;
-      backdrop-filter: blur(16px) saturate(150%);
-      -webkit-backdrop-filter: blur(16px) saturate(150%);
       box-shadow: var(--shadow-sm);
       margin: 16px 16px 0;
     }
@@ -370,6 +366,27 @@
     .doc-na { font-size: 10px; color: var(--text-3); }
     .doc-btn .spinner-dark { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--g-accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
 
+    /* ── FILE VIEWER (in-page — avoids window.open/blob-across-tabs issues on mobile Safari) ── */
+    .file-viewer {
+      position: fixed; inset: 0; z-index: 200; background: rgba(10,10,12,0.94);
+      display: flex; flex-direction: column;
+    }
+    /* A class that sets display always wins over the browser's built-in
+       [hidden] styling — without this, the overlay showed (and blocked every
+       click on the page) from first load, before any file was ever opened. */
+    .file-viewer[hidden] { display: none; }
+    .fv-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; flex-shrink: 0;
+    }
+    .fv-title { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 600; }
+    .fv-close {
+      background: rgba(255,255,255,0.14); color: #fff; border: none; border-radius: var(--r-sm);
+      font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 8px 14px; cursor: pointer;
+    }
+    .fv-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 0 12px 12px; }
+    .fv-body img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--r-sm); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 500px) {
       .group-cards { flex-direction: column; align-items: center; }
@@ -466,6 +483,15 @@
   </div>
 </div>
 
+<!-- IN-PAGE FILE VIEWER (images/PDFs render here, not in a new tab) -->
+<div id="file-viewer" class="file-viewer" hidden role="dialog" aria-modal="true">
+  <div class="fv-bar">
+    <span class="fv-title" id="fv-title"></span>
+    <button class="fv-close" onclick="closeFileViewer()">✕ Close</button>
+  </div>
+  <div class="fv-body" id="fv-body"></div>
+</div>
+
 <script>
 // ── FRAMEBUSTING ──
 if (window.top !== window.self) { window.top.location = window.self.location; }
@@ -473,6 +499,24 @@ if (window.top !== window.self) { window.top.location = window.self.location; }
 // ── INJECTED AT BUILD TIME ──
 const PCFG = { groups: __GROUPS__ };
 const ICON_SVGS = __ICONS__;
+const LOG_ENDPOINT = '__LOG_ENDPOINT__';
+
+// ── ACCESS LOG BEACON ──
+// Best-effort only: never blocks or affects the unlock/document flow. Sends
+// no title, filename or description — just which section/kind was opened.
+// A no-op until the site owner has deployed the logging Worker (LOG_ENDPOINT
+// stays empty until then).
+function logBeacon(payload) {
+  if (!LOG_ENDPOINT) return;
+  try {
+    const body = JSON.stringify(payload);
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(LOG_ENDPOINT, new Blob([body], { type: 'text/plain' }));
+    } else {
+      fetch(LOG_ENDPOINT, { method: 'POST', body, keepalive: true }).catch(() => {});
+    }
+  } catch { /* logging must never break the site */ }
+}
 
 // ── STATE ──
 let cur = 'welcome';
@@ -503,13 +547,44 @@ async function decrypt(encObj, pw) {
   return JSON.parse(new TextDecoder().decode(raw));
 }
 // Decrypt a document blob using its own embedded raw key (not password-derived).
+// Extension the browser should attach to a downloaded file, keyed by the
+// same MIME types admin.js's MIME_MAP can assign at upload time — without
+// this, a downloaded "Bank Statement 2026" has no .csv/.xlsx suffix, which
+// can stop iOS/macOS from offering the right app to open it.
+const MIME_EXT = {
+  'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/png': '.png',
+  'image/webp': '.webp', 'image/gif': '.gif', 'image/heic': '.heic',
+  'text/csv': '.csv', 'text/plain': '.txt',
+  'application/msword': '.doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+  'application/vnd.ms-excel': '.xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+  'video/mp4': '.mp4', 'video/quicktime': '.mov',
+};
+function downloadName(item) {
+  const title = item.title || 'document';
+  const ext = MIME_EXT[item.mime];
+  return (ext && !title.toLowerCase().endsWith(ext)) ? title + ext : title;
+}
+
 async function decryptFile(item) {
-  const res = await fetch('files/' + item.blob);
-  if (!res.ok) throw new Error('blob fetch failed');
-  const ciphertext = await res.arrayBuffer();
-  const key = await crypto.subtle.importKey('raw', b64(item.key), 'AES-GCM', false, ['decrypt']);
-  const raw = await crypto.subtle.decrypt({ name:'AES-GCM', iv: b64(item.iv) }, key, ciphertext);
-  return new Blob([raw], { type: item.mime || 'application/octet-stream' });
+  // A hard cap so a stalled fetch/decrypt fails visibly instead of leaving
+  // the button's spinner stuck forever with no way out. Scales with file
+  // size (a large file on a slow connection legitimately needs longer),
+  // floored at 15s and capped at 2 minutes.
+  const controller = new AbortController();
+  const timeoutMs = Math.min(120000, Math.max(15000, (item.size || 0) / 150));
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch('files/' + item.blob, { signal: controller.signal });
+    if (!res.ok) throw new Error('blob fetch failed');
+    const ciphertext = await res.arrayBuffer();
+    const key = await crypto.subtle.importKey('raw', b64(item.key), 'AES-GCM', false, ['decrypt']);
+    const raw = await crypto.subtle.decrypt({ name:'AES-GCM', iv: b64(item.iv) }, key, ciphertext);
+    return new Blob([raw], { type: item.mime || 'application/octet-stream' });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ── DOM HELPERS ──
@@ -565,6 +640,7 @@ function showScreen(id) {
     wrap.appendChild(btn);
   });
 })();
+logBeacon({ event: 'page_load' });
 
 function findGroup(id) { return PCFG.groups.find(g => g.id === id); }
 
@@ -614,6 +690,7 @@ async function tryUnlock() {
     try {
       groupData = await decrypt(g, pw);
     } catch {
+      logBeacon({ event: 'login_failed', group: activeGroupId });
       failCount++;
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);
@@ -632,6 +709,7 @@ async function tryUnlock() {
     }
 
     failCount = 0;
+    logBeacon({ event: 'login_success', group: activeGroupId });
     cache[activeGroupId] = groupData;
     input.value = '';
     applyTheme(g.theme);
@@ -676,6 +754,7 @@ function doLock() {
   stopSession();
   cache = {}; activeSection = null; activeGroupId = null;
   revokeAllObjectUrls();
+  closeFileViewer();
   document.getElementById('members-list').innerHTML = '';
   document.getElementById('docs-grid').innerHTML = '';
   showScreen('welcome');
@@ -718,6 +797,7 @@ function renderFamilyScreen(data) {
 function openSection(groupData, section, colorIdx) {
   activeSection = section;
   bump();
+  logBeacon({ event: 'section_open', group: activeGroupId, section: section.id });
 
   const av = document.getElementById('ph-avatar');
   av.style.background = AVATAR_BGS[colorIdx % AVATAR_BGS.length];
@@ -770,6 +850,7 @@ function renderItemCard(item) {
     const thumbHtml = item.thumb ? `<img class="doc-thumb" alt="">` : '';
     el.innerHTML = thumbHtml + iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml;
     if (item.thumb) loadThumb(el, item.thumb);
+    el.addEventListener('click', () => logBeacon({ event: 'item_open', group: activeGroupId, section: activeSection && activeSection.id, kind: 'link' }));
     return el;
   }
 
@@ -780,7 +861,10 @@ function renderItemCard(item) {
   el.setAttribute('role', 'listitem');
   el.setAttribute('aria-label', `Open ${item.title}`);
   el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml;
-  el.addEventListener('click', () => openFileItem(el, item, iconHtml, descHtml));
+  el.addEventListener('click', () => {
+    logBeacon({ event: 'item_open', group: activeGroupId, section: activeSection && activeSection.id, kind: 'file' });
+    openFileItem(el, item, iconHtml, descHtml);
+  });
   return el;
 }
 
@@ -797,16 +881,30 @@ async function loadThumb(linkEl, thumb) {
 async function openFileItem(el, item, iconHtml, descHtml) {
   const original = el.innerHTML;
   el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml + `<div class="spinner-dark"></div>`;
+  // Only images use the in-page viewer. PDFs download directly instead of
+  // rendering in an iframe — Safari's inline blob-PDF rendering is
+  // known-flaky, and a direct download is simpler, faster, and reliable
+  // everywhere rather than chasing another Safari-only rendering path.
+  // Very large images fall through to download too — decoding a huge photo
+  // into an in-page <img> is the same class of memory pressure that caused
+  // the mobile crash earlier, just triggered by pixels instead of CSS.
+  const MAX_INLINE_IMAGE_BYTES = 15 * 1024 * 1024;
+  const isViewable = /^image\//.test(item.mime) && (item.size || 0) <= MAX_INLINE_IMAGE_BYTES;
   try {
     const blob = await decryptFile(item);
     const url = URL.createObjectURL(blob);
     objectUrls.push(url);
-    const isViewable = /^image\//.test(item.mime) || item.mime === 'application/pdf';
     if (isViewable) {
-      window.open(url, '_blank', 'noopener');
+      // Rendered in-page, in this same document — a new tab/window needs
+      // window.open(), and a Blob URL created here does not reliably resolve
+      // once handed to a *different* browsing context (confirmed broken on
+      // mobile Safari: the popup opened, but stayed on about:blank because
+      // Safari would not load a blob: URL created by the opener). Viewing it
+      // inline sidesteps that entirely, and also needs no popup at all.
+      openFileViewer(item, url);
     } else {
       const a = document.createElement('a');
-      a.href = url; a.download = item.title || 'document';
+      a.href = url; a.download = downloadName(item);
       document.body.appendChild(a); a.click(); a.remove();
     }
     el.innerHTML = original;
@@ -817,29 +915,19 @@ async function openFileItem(el, item, iconHtml, descHtml) {
   }
 }
 
-function goFamily() { bump(); showScreen('family'); }
+function openFileViewer(item, url) {
+  document.getElementById('fv-title').textContent = item.title || 'Document';
+  document.getElementById('fv-body').innerHTML = `<img src="${esc(url)}" alt="${esc(item.title || 'Document')}" />`;
+  document.getElementById('file-viewer').hidden = false;
+  bump();
+}
 
-// ── PARALLAX (respects prefers-reduced-motion) ──
-(function initParallax() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const pairs = [
-    ['screen-family', 'hero-layer-family'],
-    ['screen-person', 'hero-layer-person'],
-  ];
-  pairs.forEach(([screenId, layerId]) => {
-    const screenEl = document.getElementById(screenId);
-    const layerEl = document.getElementById(layerId);
-    let raf = null;
-    screenEl.addEventListener('scroll', () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        const y = Math.min(screenEl.scrollTop, 200);
-        layerEl.style.transform = `translateY(${y * 0.25}px)`;
-        raf = null;
-      });
-    }, { passive: true });
-  });
-})();
+function closeFileViewer() {
+  document.getElementById('file-viewer').hidden = true;
+  document.getElementById('fv-body').innerHTML = '';
+}
+
+function goFamily() { bump(); showScreen('family'); }
 
 // ── BACK BUTTON TRAP ──
 history.pushState(null, '', location.pathname);

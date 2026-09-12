@@ -1,0 +1,27 @@
+# Family Portal — access-log Worker config.
+#
+# Nothing in this file is secret: PUBLIC_KEY_SPKI can only encrypt, never
+# decrypt (the matching private key never leaves your Mac), and
+# ALLOWED_GROUPS is just the list of group/section ids that already exist in
+# your site — not their labels, not their contents. The real secrets
+# (FINGERPRINT_SECRET, EXPORT_TOKEN) are set separately via
+# `wrangler secret put` and never appear in this file.
+#
+# See ~/Documents/family-portal/GUIDE.md for the full one-time setup.
+
+name = "zerostress-log"
+main = "log-worker.js"
+compatibility_date = "2026-09-12"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "zerostress-log"
+database_id = "1b14b154-4fe6-42a7-9ba8-7498a19723b4"
+
+[vars]
+# Paste the public key printed by `./view-log.sh` (first run) here:
+PUBLIC_KEY_SPKI = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA1j5O7aqXSn3phe+JOKCJA+UYRDJRnRtylffRXp0n5ffK7MA0PNhMesd7J9qD5M0Jh4CMFq/NLOuRSflRBH6+a2XZig1SOumF7tse7o2BEx2/2mCOrFCsz3uJNdCTv95fF55Nzk8zlz+PmXbkB3WFlHXGtlGmH+0EgWGdMmqx0OPJ4Xu/KPsrXJI744Ll9oXgb1UADb8zTKdE9UJS4PxEbYZ8GuF86c6EcGLCtA5LaOZBdWlHsmiaHcIEI2kfwR4r348NrXqdx7PC07nHlzEhQB0Z/Ta0KFoqj3P9UD8YVWYmiobVThN7JncrgzMjX+n6qJR8q68CL8SuObUY4aXxVlLKUdQPrwC4QORXJv17wISzlc69RD70yq9qelWCqX5+643NR6cGLkV9yzL17AFd0S9SWGTcqFLdA/gV8we146vwrfjKKQ/siKp8dxbnHZO2bUNdXnroQTa8IJ7tEoeXKYuRvZ6gOSXjUARRlPVcK/LqoStDOVka+JcT39U/p7ZFkGyDQjf4BkJKpMPSZ2cxxEB9QaeNwuAc3Fn62BpMxMVVtUx+ZnQXIWfj5/h+CMwguoKfR3PflPA9ajcyKNj2T6jE0nEu4kLztywc4vtWkQExTvNk+OwWhXIlx+PRnLvvp+NZmY3SbXx5m1hU7P1LzkcB5xiH3Xx5KN7yuML/WcsCAwEAAQ=="
+
+# Paste the output of `node worker/build-allowlist.js` here (run it yourself —
+# it reads your local src/config.json, which Claude never touches):
+ALLOWED_GROUPS = "{\"primary\":[\"primary-member-0\",\"primary-member-1\",\"primary-member-2\",\"primary-member-3\",\"primary-member-4\",\"primary-member-5\",\"primary-member-6\"],\"secondary\":[\"secondary-member-0\",\"secondary-member-1\"],\"kerala2026\":[\"bookings\",\"flights\",\"itinerary\",\"menu\",\"drinks\",\"videos\"]}"

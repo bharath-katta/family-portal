@@ -375,6 +375,97 @@ Either way, changes go live in ~60 seconds.
 
 ---
 
+## PART 9 — AUTOMATED TESTING (catches regressions before you have to)
+
+`./test.sh` drives **real Safari** (via `safaridriver`, built into macOS — no extra install) through the site's core flows against a disposable, dummy-data test build. It never touches `src/config.json` or `dist/`.
+
+**One-time setup** (needs your Mac password — run it yourself in a real terminal, not through Claude):
+```bash
+sudo safaridriver --enable
+```
+
+**Running it:**
+```bash
+cd ~/Documents/family-portal
+./test.sh
+```
+It builds a throwaway site with fake groups/documents, opens it in Safari, and checks: the file-viewer overlay isn't visible on load (the exact bug that once blocked every click on the site), the password/lockout flow, unlocking, opening a section, viewing a small image inline, and that oversized images/PDFs/CSVs correctly download instead — with the right file extension. Exits non-zero if anything fails, with a plain pass/fail list.
+
+**What this does and doesn't catch:** it exercises real Safari (WebKit), so it does catch the kind of structural/CSS bugs this project has hit (like the hidden-overlay bug). It runs on **desktop** Safari, so it can't reproduce mobile-only issues like the earlier compositing crash — those still need a real phone. Run `./test.sh` after any change to `src/template.html`, before pushing.
+
+---
+
+## PART 10 — ACCESS LOG (who's visiting, from where)
+
+This is optional and separate from everything above — the site works exactly the same with or without it. It adds an encrypted log of visits: how many, from roughly where (IP + city, via Cloudflare — no third-party lookup service), and which section/category was opened (never a title, filename, or description).
+
+**Design in one sentence:** the logging service can *write* an encrypted event but can never *read* one back — only your own Mac, with a password only you know, can ever decrypt it. See the plan notes under `#zerostress` if you want the full reasoning; the steps below are just what to actually run.
+
+### Step 13 — One-time Cloudflare setup
+
+1. Create a free account at cloudflare.com if you don't have one. **Turn on 2FA for it** — it now guards this log (though even a full breach only exposes ciphertext, see below).
+2. Install and log in to Cloudflare's CLI:
+   ```bash
+   cd ~/Documents/family-portal/worker
+   npx wrangler login
+   ```
+3. Create the database and apply its schema:
+   ```bash
+   npx wrangler d1 create zerostress-log
+   ```
+   Copy the `database_id` it prints into `worker/wrangler.toml` (replaces `REPLACE_ME_AFTER_wrangler_d1_create`). Then:
+   ```bash
+   npx wrangler d1 execute zerostress-log --remote --file=schema.sql
+   ```
+4. Set the two real secrets (never stored in any file — Cloudflare holds these):
+   ```bash
+   npx wrangler secret put FINGERPRINT_SECRET
+   npx wrangler secret put EXPORT_TOKEN
+   ```
+   For each, paste any long random string when prompted (e.g. generate one with `openssl rand -hex 32`). **Save the `EXPORT_TOKEN` value somewhere** (password manager) — you'll need it again in Step 15.
+5. Fill in `worker/wrangler.toml`'s `ALLOWED_GROUPS` — run this yourself (it reads your local `config.json`, which stays on your Mac):
+   ```bash
+   node build-allowlist.js
+   ```
+   Paste the printed line into `wrangler.toml`.
+6. Deploy:
+   ```bash
+   npx wrangler deploy
+   ```
+   Note the `*.workers.dev` URL it prints.
+
+### Step 14 — Generate your log key
+
+Back in the project root:
+```bash
+cd ~/Documents/family-portal
+./view-log.sh
+```
+First run has no key yet, so it asks you to choose a **log password** (separate from any group password — write it down somewhere safe; there is no recovery if you lose it) and prints a public key. Paste that into `worker/wrangler.toml` as `PUBLIC_KEY_SPKI`, then redeploy:
+```bash
+cd worker && npx wrangler deploy
+```
+
+### Step 15 — Point the site at your Worker
+
+Create `src/log-worker-config.json` (gitignored — stays on your Mac only):
+```json
+{ "workerUrl": "https://zerostress-log.<your-subdomain>.workers.dev", "exportToken": "<the EXPORT_TOKEN value from Step 13.4>" }
+```
+Then rebuild and publish as usual (`./admin.sh` → Publish, or `./build.sh` + push). The site now logs visits; `view-log.js` uses this same file to fetch them back.
+
+### Viewing the log
+
+```bash
+cd ~/Documents/family-portal
+./view-log.sh
+```
+Enter your log password. It fetches and decrypts the log, opens a one-time offline summary page in your browser, and deletes the temporary file a few seconds later — closing the tab ends the session, nothing persists. You can also just ask the family-portal skill to "view log" and it'll walk you through this same command.
+
+**If you lose the log password or `src/log-key.json`:** the historical log becomes permanently unreadable — same as losing a group password. Back up `src/log-key.json` (it's already password-encrypted, so a backup copy is safe to keep anywhere you'd keep other sensitive files).
+
+---
+
 ## SECURITY SUMMARY
 
 | What someone could do              | What they'd see                          |
@@ -387,6 +478,7 @@ Either way, changes go live in ~60 seconds.
 | Search Google for the site         | Not indexed — invisible to search engines |
 | Try to brute-force the password    | PBKDF2 with 600,000 iterations — very slow |
 | Sit idle for 5 minutes             | Automatically logged out                 |
+| Fully compromise the logging Worker or its database (if the access log is set up) | Timestamps and one-way fingerprints only — every IP, city, group and section is RSA-sealed with a public key; only `src/log-key.json` + your log password (kept only on your Mac) can decrypt it |
 
 ---
 
@@ -408,6 +500,12 @@ git add dist && git commit -m "Update portal" && git push
 # One-time: convert an old-style config.json to the groups[] format
 node migrate-config.js
 
+# Run the Safari smoke test (see PART 9)
+./test.sh
+
+# View the encrypted access log (optional feature — see PART 10)
+./view-log.sh
+
 # Check git status
 git status
 
@@ -427,6 +525,18 @@ git status
 
 **"src/config.json not found"**
 → You're not in the right folder. Run: `cd ~/Documents/family-portal` first.
+
+**`./view-log.sh` says "src/log-worker-config.json not found"**
+→ You haven't finished PART 10's one-time Cloudflare setup yet (or haven't reached Step 15). This is expected and harmless — the site logs nothing until this file exists.
+
+**`./view-log.sh` says "Incorrect password, or the key file is corrupt"**
+→ Double-check you're typing the *log* password, not a group password — they're different. If you're certain it's right and this still fails, `src/log-key.json` may be damaged; there's no recovery for that file specifically, only for restoring a backup of it.
+
+**`wrangler deploy` fails with an auth error**
+→ Run `npx wrangler login` again from inside `worker/` — the login session may have expired.
+
+**`./test.sh` fails with "You must enable 'Allow remote automation'"**
+→ One-time setup, run once ever: `sudo safaridriver --enable` (needs your Mac password).
 
 **Password prompt doesn't show characters**
 → This is normal — it's intentional so no one sees your password over your shoulder.

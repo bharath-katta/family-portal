@@ -6,9 +6,20 @@ src/config.json
 src/config.backup.json
 src/photos/
 
+# Access-log secrets — the password-encrypted private key and the Worker's
+# export bearer token. Never committed; view-log.js is the only thing that
+# reads these, and Claude must never read them either.
+src/log-key.json
+src/log-worker-config.json
+
 # macOS system files
 .DS_Store
 **/.DS_Store
 
 # Node (not used, but just in case)
 node_modules/
+
+# Wrangler's local CLI cache/state (e.g. worker/.wrangler/) — account IDs,
+# login state, build cache. Local tool state, not source, never committed.
+.wrangler/
+**/.wrangler/

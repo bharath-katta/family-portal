@@ -30,6 +30,7 @@ const DIST    = path.join(ROOT, 'dist');
 const FILES   = path.join(DIST, 'files');
 const TMPL    = path.join(ROOT, 'src', 'template.html');
 const CFG     = path.join(ROOT, 'src', 'config.json');
+const LOG_CFG = path.join(ROOT, 'src', 'log-worker-config.json');
 const PHOTOS  = path.join(ROOT, 'src', 'photos');
 const OUT     = path.join(DIST, 'index.html');
 
@@ -160,6 +161,23 @@ async function main() {
   }
   console.log('');
 
+  // Access-log endpoint — optional. Until the Worker is deployed and this
+  // file exists, the site simply logs nothing (logBeacon() is a no-op with
+  // an empty LOG_ENDPOINT), so this never blocks a build.
+  let logEndpoint = '';
+  let logConnectSrc = '';
+  if (fs.existsSync(LOG_CFG)) {
+    try {
+      const logCfg = JSON.parse(fs.readFileSync(LOG_CFG, 'utf8'));
+      if (logCfg.workerUrl) {
+        logEndpoint = new URL('/log', logCfg.workerUrl).toString();
+        logConnectSrc = ' ' + new URL(logCfg.workerUrl).origin;
+      }
+    } catch (e) {
+      console.warn(Y(`  ⚠  Could not read src/log-worker-config.json (${e.message}) — access log disabled for this build.`));
+    }
+  }
+
   // Stamp template.
   process.stdout.write('  Building dist/index.html    … ');
   let html = fs.readFileSync(TMPL, 'utf8');
@@ -167,6 +185,8 @@ async function main() {
   const before = html;
   html = html.replace('__GROUPS__', JSON.stringify(encryptedGroups));
   html = html.replace('__ICONS__', JSON.stringify(ICONS));
+  html = html.replace('__LOG_ENDPOINT__', logEndpoint);
+  html = html.replace('__LOG_CONNECT_SRC__', logConnectSrc);
   if (html === before) {
     console.log('');
     console.error(R('✖  Placeholders "__GROUPS__"/"__ICONS__" not found in template.html.'));
