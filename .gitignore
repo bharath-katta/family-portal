@@ -3,6 +3,7 @@
 # Edit them freely on your Mac — they stay on your Mac only.
 
 src/config.json
+src/config.backup.json
 src/photos/
 
 # macOS system files

@@ -2,9 +2,16 @@
 /**
  * Family Portal — Build Script
  *
- * Reads src/config.json, encrypts each family's data with its own
- * password (AES-256-GCM, PBKDF2 600k iterations), stamps the
- * encrypted blobs into src/template.html, and writes dist/index.html.
+ * Reads src/config.json (an array of "groups" — family or trip sections),
+ * encrypts each group's catalog with its own password (AES-256-GCM,
+ * PBKDF2 600k iterations), stamps the encrypted catalogs into
+ * src/template.html, and writes dist/index.html.
+ *
+ * Document files themselves are NOT touched here — they are encrypted
+ * once, at upload time, by admin.js, and live as opaque blobs under
+ * dist/files/. This script only re-encrypts the small catalog (titles,
+ * descriptions, structure, and each file's already-generated key), so a
+ * password change never requires re-uploading anything.
  *
  * Usage:  node build.js
  * Needs:  Node.js 16+ (no npm packages required — uses built-ins only)
@@ -15,13 +22,18 @@ const crypto = require('crypto');
 const fs     = require('fs');
 const path   = require('path');
 const rl     = require('readline');
+const { encryptJsonWithPassword } = require('./lib/crypto');
+const { ICONS } = require('./lib/icons');
 
 const ROOT    = __dirname;
 const DIST    = path.join(ROOT, 'dist');
+const FILES   = path.join(DIST, 'files');
 const TMPL    = path.join(ROOT, 'src', 'template.html');
 const CFG     = path.join(ROOT, 'src', 'config.json');
 const PHOTOS  = path.join(ROOT, 'src', 'photos');
 const OUT     = path.join(DIST, 'index.html');
+
+const FILES_WARN_BYTES = 700 * 1024 * 1024; // GitHub Pages is comfortable to ~1GB
 
 // ── Colours for terminal output ──
 const G  = s => `\x1b[32m${s}\x1b[0m`;   // green
@@ -30,19 +42,10 @@ const R  = s => `\x1b[31m${s}\x1b[0m`;   // red
 const B  = s => `\x1b[1m${s}\x1b[0m`;    // bold
 const DM = s => `\x1b[2m${s}\x1b[0m`;    // dim
 
-// ── Read a line from stdin (visible) ──
-function prompt(question) {
-  return new Promise(resolve => {
-    const iface = rl.createInterface({ input: process.stdin, output: process.stdout });
-    iface.question(question, ans => { iface.close(); resolve(ans.trim()); });
-  });
-}
-
 // ── Read a password from stdin (hidden — shows * per char) ──
 function promptPassword(question) {
   return new Promise(resolve => {
     if (!process.stdin.isTTY) {
-      // Non-interactive (e.g. piped) — read normally
       const iface = rl.createInterface({ input: process.stdin });
       iface.once('line', ans => { iface.close(); resolve(ans.trim()); });
       return;
@@ -84,33 +87,28 @@ function photoToDataUrl(relPath) {
   return `data:${mime};base64,${fs.readFileSync(full).toString('base64')}`;
 }
 
-// ── AES-256-GCM encrypt with PBKDF2 key derivation ──
-async function encryptJson(data, password) {
-  const json = JSON.stringify(data);
-  const salt = crypto.randomBytes(16);
-  const iv   = crypto.randomBytes(12);
+function dirSizeBytes(dir) {
+  if (!fs.existsSync(dir)) return 0;
+  let total = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    total += entry.isDirectory() ? dirSizeBytes(full) : fs.statSync(full).size;
+  }
+  return total;
+}
 
-  const key = await new Promise((ok, fail) =>
-    crypto.pbkdf2(password, salt, 600000, 32, 'sha256', (err, k) => err ? fail(err) : ok(k))
-  );
-
-  const cipher    = crypto.createCipheriv('aes-256-gcm', key, iv);
-  const encrypted = Buffer.concat([cipher.update(json, 'utf8'), cipher.final()]);
-  const tag       = cipher.getAuthTag();                       // 16 bytes
-  const ciphertext = Buffer.concat([encrypted, tag]);          // append tag so Web Crypto can verify
-
-  return {
-    salt: salt.toString('base64'),
-    iv:   iv.toString('base64'),
-    data: ciphertext.toString('base64')
-  };
+async function promptGroupPassword(label) {
+  const pw = await promptPassword(`🔑 Password for "${label}" : `);
+  if (pw.length < 6) { console.error(R('\n✖  Password must be at least 6 characters.')); process.exit(1); }
+  const pwc = await promptPassword(`   Confirm password${' '.repeat(Math.max(0, label.length - 8))}: `);
+  if (pw !== pwc) { console.error(R('\n✖  Passwords do not match.')); process.exit(1); }
+  return pw;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────
 async function main() {
   console.log('\n' + B('━━━ Family Portal — Build & Encrypt ━━━') + '\n');
 
-  // 1. Check prerequisites
   if (!fs.existsSync(TMPL)) {
     console.error(R('✖  src/template.html not found. Run from the family-portal directory.')); process.exit(1);
   }
@@ -118,68 +116,64 @@ async function main() {
     console.error(R('✖  src/config.json not found.')); process.exit(1);
   }
   fs.mkdirSync(DIST, { recursive: true });
+  fs.mkdirSync(FILES, { recursive: true });
 
-  // 2. Load config
   let cfg;
   try { cfg = JSON.parse(fs.readFileSync(CFG, 'utf8')); }
   catch (e) { console.error(R(`✖  config.json parse error: ${e.message}`)); process.exit(1); }
 
-  // 3. Validate
-  if (!cfg.primaryFamily || !cfg.secondaryFamily) {
-    console.error(R('✖  config.json must have "primaryFamily" and "secondaryFamily".')); process.exit(1);
+  if (!Array.isArray(cfg.groups) || cfg.groups.length === 0) {
+    console.error(R('✖  config.json must have a non-empty "groups" array.'));
+    console.error(Y('   Run `node migrate-config.js` first if this is an old-style config.json.'));
+    process.exit(1);
   }
 
-  // 4. Process photos into base64
-  function processMembers(members) {
-    return members.map(m => ({ ...m, photo: photoToDataUrl(m.photo) }));
+  for (const g of cfg.groups) {
+    if (!g.id || !g.label || !g.layout || !g.theme || !Array.isArray(g.sections)) {
+      console.error(R(`✖  Group "${g.id || '?'}" is missing one of: id, label, layout, theme, sections.`));
+      process.exit(1);
+    }
   }
 
-  const primaryData   = { ...cfg.primaryFamily,   members: processMembers(cfg.primaryFamily.members) };
-  const secondaryData = { ...cfg.secondaryFamily,  members: processMembers(cfg.secondaryFamily.members) };
+  console.log(DM(`  Groups found: ${cfg.groups.map(g => `${g.label} (${g.sections.length})`).join(', ')}\n`));
 
-  console.log(DM(`  Primary family   : ${primaryData.members.length} member(s)`));
-  console.log(DM(`  Secondary family : ${secondaryData.members.length} member(s)\n`));
+  // Resolve avatars (people-layout groups only) — everything else passes through untouched.
+  const groupsData = cfg.groups.map(g => ({
+    id: g.id,
+    label: g.label,
+    layout: g.layout,
+    theme: g.theme,
+    sections: g.sections.map(s => ({
+      ...s,
+      avatar: g.layout === 'people' ? photoToDataUrl(s.avatar) : undefined,
+    })),
+  }));
 
-  // 5. Get passwords
-  const pw1 = await promptPassword(`🔑 Password for "${primaryData.familyName}" family : `);
-  if (pw1.length < 6) { console.error(R('\n✖  Password must be at least 6 characters.')); process.exit(1); }
-  const pw1c = await promptPassword(`   Confirm password                         : `);
-  if (pw1 !== pw1c)   { console.error(R('\n✖  Passwords do not match.')); process.exit(1); }
-
+  // Passwords, one per group.
+  const encryptedGroups = [];
+  for (const g of groupsData) {
+    const pw = await promptGroupPassword(g.label);
+    process.stdout.write(`  Encrypting "${g.label}" … `);
+    const enc = await encryptJsonWithPassword(g, pw);
+    console.log(G('done'));
+    encryptedGroups.push({ id: g.id, label: g.label, theme: g.theme, layout: g.layout, ...enc });
+  }
   console.log('');
 
-  const pw2 = await promptPassword(`🔑 Password for "${secondaryData.familyName}" family : `);
-  if (pw2.length < 6) { console.error(R('\n✖  Password must be at least 6 characters.')); process.exit(1); }
-  const pw2c = await promptPassword(`   Confirm password                           : `);
-  if (pw2 !== pw2c)   { console.error(R('\n✖  Passwords do not match.')); process.exit(1); }
-
-  console.log('');
-
-  // 6. Encrypt
-  process.stdout.write('  Encrypting Primary family   … ');
-  const enc1 = await encryptJson(primaryData, pw1);
-  console.log(G('done'));
-
-  process.stdout.write('  Encrypting Secondary family … ');
-  const enc2 = await encryptJson(secondaryData, pw2);
-  console.log(G('done'));
-
-  // 7. Stamp template
+  // Stamp template.
   process.stdout.write('  Building dist/index.html    … ');
   let html = fs.readFileSync(TMPL, 'utf8');
 
-  html = html
-    .replace('"__PRIMARY_LABEL__"',   JSON.stringify(primaryData.familyName))
-    .replace('"__SECONDARY_LABEL__"', JSON.stringify(secondaryData.familyName))
-    .replace('"__PRIMARY_SALT__"',    JSON.stringify(enc1.salt))
-    .replace('"__PRIMARY_IV__"',      JSON.stringify(enc1.iv))
-    .replace('"__PRIMARY_DATA__"',    JSON.stringify(enc1.data))
-    .replace('"__SECONDARY_SALT__"',  JSON.stringify(enc2.salt))
-    .replace('"__SECONDARY_IV__"',    JSON.stringify(enc2.iv))
-    .replace('"__SECONDARY_DATA__"',  JSON.stringify(enc2.data));
+  const before = html;
+  html = html.replace('__GROUPS__', JSON.stringify(encryptedGroups));
+  html = html.replace('__ICONS__', JSON.stringify(ICONS));
+  if (html === before) {
+    console.log('');
+    console.error(R('✖  Placeholders "__GROUPS__"/"__ICONS__" not found in template.html.'));
+    process.exit(1);
+  }
 
-  // Verify all placeholders were replaced
-  const missing = html.match(/"__[A-Z_]+__"/g);
+  const missing = html.match(/__[A-Z0-9_]+__/g);
   if (missing) {
     console.log('');
     console.error(R(`✖  Unfilled placeholders: ${missing.join(', ')}`));
@@ -189,14 +183,23 @@ async function main() {
   fs.writeFileSync(OUT, html, 'utf8');
   console.log(G('done'));
 
-  // 8. Summary
+  // Summary + size warning.
   const kb = (fs.statSync(OUT).size / 1024).toFixed(1);
+  const filesBytes = dirSizeBytes(FILES);
+  const filesMB = (filesBytes / (1024 * 1024)).toFixed(1);
+
   console.log('\n' + G('✔  Build complete!'));
-  console.log(`   Output : dist/index.html (${kb} KB)\n`);
+  console.log(`   Catalog : dist/index.html (${kb} KB)`);
+  console.log(`   Files   : dist/files/ (${filesMB} MB)\n`);
+
+  if (filesBytes > FILES_WARN_BYTES) {
+    console.log(Y(`⚠  dist/files/ is over 700MB. GitHub Pages gets uncomfortable past ~1GB —`));
+    console.log(Y(`   consider moving to external storage soon.\n`));
+  }
+
   console.log(B('Next steps:'));
-  console.log('   1. Open dist/index.html in your browser to verify it works');
-  console.log('   2. git add dist/index.html && git commit -m "Update portal"');
-  console.log('   3. git push');
+  console.log('   1. Open dist/index.html in your browser to verify it works (serve over http://, not file://)');
+  console.log('   2. git add dist && git commit -m "Update portal" && git push');
   console.log('\n' + Y('⚠  Security reminder:'));
   console.log('   • Do NOT commit src/config.json or src/photos/ to GitHub');
   console.log('   • The .gitignore already excludes them');

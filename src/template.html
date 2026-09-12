@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
   <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' blob: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-src blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none';" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#FCF9EA" />
@@ -17,14 +18,9 @@
       touch-action: manipulation;
     }
     :root {
-      /*
-       * Palette 1 — #F2EAE0 · #B4D3D9 · #BDA6CE · #9B8EC7
-       * Palette 2 — #FCF9EA · #BADFDB · #FFA4A4 · #FFBDBD
-       */
-
       /* Backgrounds */
-      --bg:           #FCF9EA;   /* P2 ivory cream   */
-      --bg-alt:       #F2EAE0;   /* P1 warm linen    */
+      --bg:           #FCF9EA;
+      --bg-alt:       #F2EAE0;
 
       /* Surfaces */
       --surface:      #FFFFFF;
@@ -42,26 +38,6 @@
       --text-2:       #7B748E;
       --text-3:       #B4AECB;
 
-      /* Primary family — dusty blue/violet from Palette 1 */
-      --p-light:      #B4D3D9;   /* exact P1               */
-      --p-bg:         #EDF5F7;   /* light tint of #B4D3D9  */
-      --p-bg2:        #D5E9EE;   /* richer tint            */
-      --p-border:     #B4D3D9;   /* exact P1               */
-      --p-accent:     #3A7880;   /* #B4D3D9 darkened ~50%  */
-      --p-btn:        #3A7880;   /* 4.6:1 on #FCF9EA ✓     */
-      --p-btn-hover:  #2A6870;
-      --p-text:       #1A4850;
-
-      /* Secondary family — coral/blush from Palette 2 */
-      --s-light:      #FFA4A4;   /* exact P2               */
-      --s-bg:         #FFF0F0;   /* light tint of #FFA4A4  */
-      --s-bg2:        #FFE2E2;   /* richer tint/FFBDBD     */
-      --s-border:     #FFBDBD;   /* exact P2               */
-      --s-accent:     #B85050;   /* #FFA4A4 darkened ~50%  */
-      --s-btn:        #B85050;   /* 4.6:1 on #FCF9EA ✓     */
-      --s-btn-hover:  #A04040;
-      --s-text:       #7A2020;
-
       /* Radius */
       --r-xl:   24px;
       --r-lg:   18px;
@@ -73,6 +49,26 @@
       --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
               "Helvetica Neue", Arial, sans-serif;
       --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── GENERIC THEME RAMPS — add a group, add one block here ── */
+    [data-theme="blue"] {
+      --g-light: #B4D3D9; --g-bg: #EDF5F7; --g-bg2: #D5E9EE;
+      --g-border: #B4D3D9; --g-accent: #3A7880;
+      --g-btn: #3A7880; --g-btn-hover: #2A6870; --g-text: #1A4850;
+      --g-hue: 190;
+    }
+    [data-theme="coral"] {
+      --g-light: #FFA4A4; --g-bg: #FFF0F0; --g-bg2: #FFE2E2;
+      --g-border: #FFBDBD; --g-accent: #B85050;
+      --g-btn: #B85050; --g-btn-hover: #A04040; --g-text: #7A2020;
+      --g-hue: 6;
+    }
+    [data-theme="teal"] {
+      --g-light: #8FCFC2; --g-bg: #EAF7F4; --g-bg2: #CFEFE8;
+      --g-border: #8FCFC2; --g-accent: #227A68;
+      --g-btn: #227A68; --g-btn-hover: #1A5F52; --g-text: #0F4038;
+      --g-hue: 165;
     }
 
     html {
@@ -91,38 +87,19 @@
       position: relative;
     }
 
-    /* ── BACKGROUND BLOBS (light pastel, no dark orbs) ── */
-    .bg-orbs {
-      position: fixed; inset: 0;
-      pointer-events: none; z-index: 0; overflow: hidden;
-    }
-    .orb {
-      position: absolute; border-radius: 50%;
-      filter: blur(110px);
-      animation: drift 26s ease-in-out infinite;
-    }
-    .orb-1 {
-      width: 640px; height: 640px; opacity: 0.38;
-      background: radial-gradient(circle, #B4D3D9 0%, transparent 70%);
-      top: -220px; left: -160px; animation-delay: 0s;
-    }
-    .orb-2 {
-      width: 500px; height: 500px; opacity: 0.30;
-      background: radial-gradient(circle, #FFA4A4 0%, transparent 70%);
-      top: -120px; right: -120px; animation-delay: -10s;
-    }
-    .orb-3 {
-      width: 420px; height: 420px; opacity: 0.22;
-      background: radial-gradient(circle, #BDA6CE 0%, transparent 70%);
-      bottom: -120px; left: 32%; animation-delay: -19s;
-    }
+    /* ── BACKGROUND BLOBS ── */
+    .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(110px); animation: drift 26s ease-in-out infinite; }
+    .orb-1 { width: 640px; height: 640px; opacity: 0.38; background: radial-gradient(circle, #B4D3D9 0%, transparent 70%); top: -220px; left: -160px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; opacity: 0.30; background: radial-gradient(circle, #FFA4A4 0%, transparent 70%); top: -120px; right: -120px; animation-delay: -10s; }
+    .orb-3 { width: 420px; height: 420px; opacity: 0.22; background: radial-gradient(circle, #8FCFC2 0%, transparent 70%); bottom: -120px; left: 32%; animation-delay: -19s; }
     @keyframes drift {
       0%,100% { transform: translate(0,0) scale(1); }
       33%      { transform: translate(32px,-28px) scale(1.06); }
       66%      { transform: translate(-22px,20px) scale(0.94); }
     }
     @media (prefers-reduced-motion: reduce) {
-      .orb { animation: none; }
+      .orb, .hero-bg-layer { animation: none !important; transition: none !important; }
     }
 
     /* ── SCREENS ── */
@@ -137,15 +114,9 @@
       overflow-y: auto; overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
     }
-    .screen.active {
-      opacity: 1; transform: scale(1) translateY(0);
-      pointer-events: all;
-    }
-    #screen-family, #screen-person {
-      justify-content: flex-start; padding: 0;
-    }
+    .screen.active { opacity: 1; transform: scale(1) translateY(0); pointer-events: all; }
+    #screen-family, #screen-person { justify-content: flex-start; padding: 0; }
 
-    /* ── SHARED CARD ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -156,86 +127,57 @@
     /* ══════════════════════════════════════
        SCREEN 1 — WELCOME
     ══════════════════════════════════════ */
-    #screen-welcome { gap: 52px; }
-
+    #screen-welcome { gap: 48px; }
     .welcome-head { text-align: center; }
-
     .hello-word {
       font-family: var(--sans);
-      font-size: clamp(72px, 15vw, 118px);
-      font-weight: 700;
-      font-style: italic;
-      letter-spacing: -0.035em;
-      line-height: 1;
-      color: var(--text);
-      margin-bottom: 12px;
+      font-size: clamp(64px, 14vw, 108px);
+      font-weight: 700; font-style: italic;
+      letter-spacing: -0.035em; line-height: 1;
+      color: var(--text); margin-bottom: 12px;
     }
-
     .portal-label {
-      font-size: clamp(11px, 2vw, 14px);
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--text-2);
+      font-size: clamp(11px, 2vw, 14px); font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-2);
     }
 
-    .family-cards {
-      display: flex; gap: 16px;
-      flex-wrap: wrap; justify-content: center;
-      width: 100%; max-width: 600px;
-    }
+    .group-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 760px; }
 
-    .family-card {
+    .group-card {
       flex: 1; min-width: 200px; max-width: 270px;
-      padding: 36px 24px;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 14px;
-      cursor: pointer; border: none;
-      text-align: center; position: relative; overflow: hidden;
-      border-radius: var(--r-xl);
+      padding: 0; border: none; cursor: pointer;
+      border-radius: var(--r-xl); overflow: hidden;
+      position: relative; text-align: center;
+      border: 1.5px solid var(--g-border);
       transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+      box-shadow: var(--shadow-sm);
     }
-    .family-card:hover {
-      transform: translateY(-7px) scale(1.02);
-      box-shadow: var(--shadow-lg);
-    }
-    .family-card:active  { transform: scale(0.975); }
-    .family-card:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+    .group-card:hover { transform: translateY(-7px) scale(1.02); box-shadow: var(--shadow-lg); }
+    .group-card:active { transform: scale(0.975); }
+    .group-card:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 
-    /* Teal card — Primary */
-    .family-card.primary {
-      background: linear-gradient(150deg, var(--p-bg) 0%, var(--p-bg2) 100%);
-      border: 1.5px solid var(--p-border);
+    .gc-hero {
+      height: 108px; width: 100%;
+      background:
+        radial-gradient(120% 140% at 20% 0%, hsla(var(--g-hue),75%,88%,0.9), transparent 60%),
+        linear-gradient(150deg, var(--g-bg) 0%, var(--g-bg2) 100%);
     }
-    .family-card.primary .fc-name { color: var(--p-text); }
-
-    /* Coral card — Secondary */
-    .family-card.secondary {
-      background: linear-gradient(150deg, var(--s-bg) 0%, var(--s-bg2) 100%);
-      border: 1.5px solid var(--s-border);
+    .gc-body { padding: 18px 20px 26px; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: -34px; }
+    .gc-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--surface); box-shadow: var(--shadow-md);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--g-accent); font-size: 26px;
     }
-    .family-card.secondary .fc-name { color: var(--s-text); }
-
-    .fc-emoji { font-size: 52px; line-height: 1; }
-    .fc-name  { font-size: 20px; font-weight: 700; }
-    .fc-lock  {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; font-weight: 500; color: var(--text-2);
-    }
-    .lock-pip { width: 6px; height: 6px; border-radius: 50%; }
-    .family-card.primary   .lock-pip { background: var(--p-btn); }
-    .family-card.secondary .lock-pip { background: var(--s-btn); }
+    .gc-icon svg { width: 26px; height: 26px; }
+    .gc-name { font-size: 18px; font-weight: 700; color: var(--g-text); }
+    .gc-lock { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; color: var(--text-2); }
+    .lock-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--g-btn); }
 
     /* ══════════════════════════════════════
        SCREEN 2 — PASSWORD
     ══════════════════════════════════════ */
-    .pw-card {
-      width: 100%; max-width: 390px;
-      padding: 36px 28px;
-      display: flex; flex-direction: column;
-      align-items: stretch; gap: 16px;
-    }
-
+    .pw-card { width: 100%; max-width: 390px; padding: 36px 28px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
     .pw-back {
       align-self: flex-start; background: none; border: none;
       color: var(--text-2); font-family: var(--sans); font-size: 14px;
@@ -245,216 +187,153 @@
     .pw-back:hover { color: var(--text); }
     .pw-back svg { width: 15px; height: 15px; }
 
-    .pw-emoji { text-align: center; font-size: 48px; line-height: 1; }
-    .pw-title {
-      font-size: 22px; font-weight: 700;
-      text-align: center; color: var(--text);
-    }
+    .pw-icon { display: flex; align-items: center; justify-content: center; color: var(--g-accent); }
+    .pw-icon svg { width: 44px; height: 44px; }
+    .pw-title { font-size: 22px; font-weight: 700; text-align: center; color: var(--text); }
     .pw-hint  { font-size: 13px; color: var(--text-2); text-align: center; }
 
     .pw-input {
-      background: var(--surface-alt);
-      border: 1.5px solid var(--border-md);
-      border-radius: var(--r-md);
-      padding: 15px 18px;
-      font-size: 18px; font-family: var(--sans);
-      color: var(--text); text-align: center;
-      letter-spacing: 0.18em; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      width: 100%;
+      background: var(--surface-alt); border: 1.5px solid var(--border-md);
+      border-radius: var(--r-md); padding: 15px 18px;
+      font-size: 18px; font-family: var(--sans); color: var(--text);
+      text-align: center; letter-spacing: 0.18em; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
     }
-    .pw-input::placeholder {
-      letter-spacing: 0; font-size: 13px; color: var(--text-3);
-    }
-    .pw-card.primary   .pw-input:focus {
-      border-color: var(--p-btn);
-      box-shadow: 0 0 0 3px rgba(75,168,181,0.18);
-    }
-    .pw-card.secondary .pw-input:focus {
-      border-color: var(--s-btn);
-      box-shadow: 0 0 0 3px rgba(224,120,120,0.18);
-    }
-
+    .pw-input::placeholder { letter-spacing: 0; font-size: 13px; color: var(--text-3); }
+    .pw-card .pw-input:focus { border-color: var(--g-btn); box-shadow: 0 0 0 3px hsla(var(--g-hue),50%,55%,0.18); }
     .pw-input.shake { animation: shake 0.45s ease; }
     @keyframes shake {
       0%,100% { transform: translateX(0); }
-      22%      { transform: translateX(-10px); }
-      44%      { transform: translateX(10px); }
-      66%      { transform: translateX(-6px); }
-      88%      { transform: translateX(5px); }
+      22% { transform: translateX(-10px); } 44% { transform: translateX(10px); }
+      66% { transform: translateX(-6px); }  88% { transform: translateX(5px); }
     }
 
     .btn-unlock {
-      padding: 15px; border: none;
-      border-radius: var(--r-md);
-      font-family: var(--sans); font-size: 15px;
-      font-weight: 700; cursor: pointer; color: #FFFFFF;
-      display: flex; align-items: center;
-      justify-content: center; gap: 8px;
-      letter-spacing: 0.01em;
+      padding: 15px; border: none; border-radius: var(--r-md);
+      font-family: var(--sans); font-size: 15px; font-weight: 700;
+      cursor: pointer; color: #FFFFFF;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      letter-spacing: 0.01em; min-height: 52px;
+      background: var(--g-btn);
       transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      min-height: 52px;
     }
-    .btn-unlock:hover  { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-unlock:not(:disabled):hover { background: var(--g-btn-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
     .btn-unlock:active { transform: scale(0.98); }
     .btn-unlock:disabled { opacity: 0.50; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .pw-card.primary   .btn-unlock            { background: var(--p-btn); }
-    .pw-card.primary   .btn-unlock:not(:disabled):hover { background: var(--p-btn-hover); }
-    .pw-card.secondary .btn-unlock            { background: var(--s-btn); }
-    .pw-card.secondary .btn-unlock:not(:disabled):hover { background: var(--s-btn-hover); }
-
-    .pw-error {
-      font-size: 13px; color: #B03020; text-align: center;
-      min-height: 16px; opacity: 0; transition: opacity 0.2s;
-    }
+    .pw-error { font-size: 13px; color: #B03020; text-align: center; min-height: 16px; opacity: 0; transition: opacity 0.2s; }
     .pw-error.show { opacity: 1; }
-
     .pw-lockout {
-      font-size: 13px; color: #8B4A20;
-      background: #FFF4EE; border: 1px solid #F0C8A8;
-      border-radius: var(--r-sm);
-      padding: 10px 14px; text-align: center;
-      display: none; line-height: 1.5;
+      font-size: 13px; color: #8B4A20; background: #FFF4EE; border: 1px solid #F0C8A8;
+      border-radius: var(--r-sm); padding: 10px 14px; text-align: center; display: none; line-height: 1.5;
     }
     .pw-lockout.show { display: block; }
 
     .spinner {
       width: 18px; height: 18px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: #FFFFFF;
+      border: 2px solid rgba(255,255,255,0.35); border-top-color: #FFFFFF;
       animation: spin 0.6s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ══════════════════════════════════════
-       SCREEN 3 — FAMILY MEMBERS
+       SCREEN 3 & 4 — SHARED PAGE / HERO
     ══════════════════════════════════════ */
-    .page-inner {
-      width: 100%; max-width: 580px;
-      margin: 0 auto;
-      padding: 20px 16px 48px;
-      display: flex; flex-direction: column; gap: 14px;
+    .page-inner { width: 100%; max-width: 640px; margin: 0 auto; padding: 0 0 48px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+
+    .hero-bg {
+      position: absolute; top: 0; left: 0; right: 0; height: 176px;
+      overflow: hidden; border-radius: 0 0 var(--r-xl) var(--r-xl); z-index: 0;
+      pointer-events: none;
     }
+    .hero-bg-layer {
+      position: absolute; top: -30px; left: 0; right: 0; height: 240px;
+      background:
+        radial-gradient(90% 120% at 15% 10%, hsla(var(--g-hue),75%,85%,0.85), transparent 60%),
+        radial-gradient(70% 100% at 85% 90%, hsla(calc(var(--g-hue) + 35),70%,82%,0.6), transparent 65%),
+        linear-gradient(160deg, var(--g-bg) 0%, var(--g-bg2) 100%);
+      will-change: transform;
+      transition: transform 0.05s linear;
+    }
+
+    .page-content { position: relative; z-index: 1; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 14px; }
 
     .top-bar {
       display: flex; align-items: center; gap: 10px;
       padding: 12px 16px;
-      background: rgba(255,255,255,0.86);
+      background: rgba(255,255,255,0.80);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      flex-shrink: 0; position: sticky; top: 0; z-index: 5;
+      flex-shrink: 0; position: sticky; top: 16px; z-index: 5;
       backdrop-filter: blur(16px) saturate(150%);
       -webkit-backdrop-filter: blur(16px) saturate(150%);
       box-shadow: var(--shadow-sm);
+      margin: 16px 16px 0;
     }
-
-    .tb-family-dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    }
-    .primary-ctx   .tb-family-dot { background: var(--p-light); }
-    .secondary-ctx .tb-family-dot { background: var(--s-light); }
-
+    .tb-family-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--g-light); flex-shrink: 0; }
     .tb-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--text); }
-
-    .tb-timer {
-      font-size: 12px; color: var(--text-2);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.03em; font-weight: 500;
-    }
-    .tb-timer.warn { color: #C07020; }
-    .tb-timer.crit { color: #C02820; }
-
+    .tb-timer { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; letter-spacing: 0.03em; font-weight: 500; }
+    .tb-timer.warn { color: #C07020; } .tb-timer.crit { color: #C02820; }
     .btn-lock {
-      background: var(--surface-alt);
-      border: 1px solid var(--border-md);
-      border-radius: var(--r-sm);
-      color: var(--text-2); font-family: var(--sans);
-      font-size: 12px; font-weight: 600;
-      padding: 6px 12px; cursor: pointer;
-      display: flex; align-items: center; gap: 4px;
-      min-height: 32px;
-      transition: background 0.2s, color 0.2s;
+      background: var(--surface-alt); border: 1px solid var(--border-md); border-radius: var(--r-sm);
+      color: var(--text-2); font-family: var(--sans); font-size: 12px; font-weight: 600;
+      padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+      min-height: 32px; transition: background 0.2s, color 0.2s;
     }
     .btn-lock:hover { background: var(--bg-alt); color: var(--text); }
 
-    .section-eyebrow {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--text-3); padding: 0 4px;
-    }
+    .hero-title-block { padding: 22px 4px 4px; }
+    .h-title { font-size: clamp(24px, 5.5vw, 34px); font-weight: 800; color: var(--text); line-height: 1.1; }
+    .h-sub   { font-size: 13px; color: var(--text-2); margin-top: 5px; }
+
+    .section-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); padding: 0 4px; }
 
     .members-list { display: flex; flex-direction: column; gap: 10px; }
 
     .member-btn {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 18px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg); cursor: pointer;
-      color: var(--text); width: 100%; text-align: left;
+      display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+      cursor: pointer; color: var(--text); width: 100%; text-align: left;
       font-family: var(--sans); position: relative; overflow: hidden;
       box-shadow: var(--shadow-sm);
       transition: transform 0.22s var(--ease), border-color 0.22s, box-shadow 0.22s;
     }
     .member-btn::before {
-      content: ''; position: absolute;
-      left: 0; top: 0; bottom: 0; width: 3px;
-      border-radius: 3px 0 0 3px;
-      opacity: 0; transition: opacity 0.22s;
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      border-radius: 3px 0 0 3px; background: var(--g-btn); opacity: 0; transition: opacity 0.22s;
     }
-    .primary-ctx   .member-btn::before { background: var(--p-btn); }
-    .secondary-ctx .member-btn::before { background: var(--s-btn); }
     .member-btn:hover::before { opacity: 1; }
-    .member-btn:hover {
-      transform: translateX(4px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--border-md);
-    }
+    .member-btn:hover { transform: translateX(4px); box-shadow: var(--shadow-md); border-color: var(--border-md); }
     .member-btn:active { transform: scale(0.99); }
     .member-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
     .avatar {
       flex-shrink: 0; border-radius: 50%; overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-      position: relative; z-index: 1;
+      font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.12); position: relative; z-index: 1;
     }
     .avatar img { width: 100%; height: 100%; object-fit: cover; }
     .avatar.lg { width: 48px; height: 48px; font-size: 15px; }
     .avatar.xl { width: 58px; height: 58px; font-size: 18px; }
+    .avatar svg { width: 22px; height: 22px; }
+    .avatar.xl svg { width: 26px; height: 26px; }
 
     .member-info { flex: 1; }
     .member-name { font-size: 16px; font-weight: 700; line-height: 1.2; }
     .member-sub  { font-size: 12px; color: var(--text-2); margin-top: 3px; }
 
-    .chevron {
-      font-size: 20px; color: var(--text-3);
-      font-weight: 300; line-height: 1;
-      transition: transform 0.2s, color 0.2s;
-    }
-    .primary-ctx   .member-btn:hover .chevron { color: var(--p-btn); transform: translateX(3px); }
-    .secondary-ctx .member-btn:hover .chevron { color: var(--s-btn); transform: translateX(3px); }
+    .chevron { font-size: 20px; color: var(--text-3); font-weight: 300; line-height: 1; transition: transform 0.2s, color 0.2s; }
+    .member-btn:hover .chevron { color: var(--g-btn); transform: translateX(3px); }
 
     /* ══════════════════════════════════════
-       SCREEN 4 — PERSON DOCUMENTS
+       SCREEN 4 — ITEMS GRID
     ══════════════════════════════════════ */
-    .person-header {
-      display: flex; align-items: center; gap: 14px;
-      padding: 20px 18px; border-radius: var(--r-xl);
-    }
-
+    .person-header { display: flex; align-items: center; gap: 14px; padding: 20px 18px; border-radius: var(--r-xl); }
     .btn-back {
-      background: var(--surface-alt);
-      border: 1px solid var(--border-md);
-      border-radius: var(--r-sm);
-      color: var(--text-2); font-family: var(--sans);
-      font-size: 13px; font-weight: 500;
-      padding: 8px 14px; cursor: pointer;
-      display: flex; align-items: center; gap: 4px;
-      min-height: 36px; flex-shrink: 0;
-      transition: background 0.2s, color 0.2s;
+      background: var(--surface-alt); border: 1px solid var(--border-md); border-radius: var(--r-sm);
+      color: var(--text-2); font-family: var(--sans); font-size: 13px; font-weight: 500;
+      padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+      min-height: 36px; flex-shrink: 0; transition: background 0.2s, color 0.2s;
     }
     .btn-back:hover { background: var(--bg-alt); color: var(--text); }
     .btn-back svg { width: 14px; height: 14px; }
@@ -463,331 +342,266 @@
     .person-name { font-size: 22px; font-weight: 700; }
     .person-sub  { font-size: 12px; color: var(--text-2); margin-top: 3px; }
 
-    .docs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+    .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
     .doc-btn {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 10px; padding: 22px 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg); cursor: pointer;
-      color: var(--text); text-decoration: none;
-      text-align: center; font-family: var(--sans);
-      min-height: 115px;
-      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; padding: 20px 14px 16px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+      cursor: pointer; color: var(--text); text-decoration: none; text-align: center;
+      font-family: var(--sans); min-height: 128px; box-shadow: var(--shadow-sm);
       transition: transform 0.22s var(--ease), border-color 0.22s, box-shadow 0.22s;
+      position: relative; overflow: hidden;
     }
-    .doc-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-      text-decoration: none;
-    }
-    .primary-ctx   .doc-btn:hover { border-color: var(--p-light); }
-    .secondary-ctx .doc-btn:hover { border-color: var(--s-light); }
+    .doc-btn:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); text-decoration: none; border-color: var(--g-light); }
     .doc-btn:active { transform: scale(0.97); }
     .doc-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+    .doc-btn.inactive { opacity: 0.40; cursor: default; pointer-events: none; }
+    .doc-btn.err { animation: shake 0.4s ease; }
 
-    .doc-btn.inactive {
-      opacity: 0.38; cursor: default; pointer-events: none;
+    .doc-thumb { width: 100%; height: 64px; border-radius: var(--r-sm); object-fit: cover; margin-bottom: 2px; background: var(--surface-alt); }
+    .doc-icon { width: 26px; height: 26px; color: var(--g-accent); }
+    .doc-icon.emoji { font-size: 26px; line-height: 1; }
+    .doc-title { font-size: 13.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+    .doc-desc {
+      font-size: 11.5px; color: var(--text-2); line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-
-    .doc-icon { font-size: 28px; line-height: 1; }
-    .doc-name { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text); }
-    .doc-na   { font-size: 10px; color: var(--text-3); }
+    .doc-na { font-size: 10px; color: var(--text-3); }
+    .doc-btn .spinner-dark { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--g-accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 500px) {
-      .family-cards { flex-direction: column; align-items: center; }
-      .family-card  { max-width: 340px; width: 100%; }
-      .hello-word   { font-size: 72px; }
+      .group-cards { flex-direction: column; align-items: center; }
+      .group-card  { max-width: 340px; width: 100%; }
+      .hello-word  { font-size: 60px; }
     }
-    @media (max-width: 340px) {
-      .docs-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 340px) { .docs-grid { grid-template-columns: 1fr; } }
     @media (min-width: 700px) {
-      .page-inner { padding: 28px 24px 60px; gap: 18px; }
-      .docs-grid  { grid-template-columns: repeat(3, 1fr); }
+      .page-content { padding: 20px 24px 0; gap: 18px; }
+      .docs-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
 <body>
 
-<!-- Ambient pastel blobs -->
 <div class="bg-orbs" aria-hidden="true">
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 1 — WELCOME
-═══════════════════════════════════ -->
+<!-- SCREEN 1 — WELCOME -->
 <div id="screen-welcome" class="screen active" role="main" aria-label="Welcome">
   <div class="welcome-head">
     <div class="hello-word">Hello.</div>
     <div class="portal-label">Family Portal</div>
   </div>
-  <div class="family-cards" role="list">
-    <button class="family-card primary" id="btn-primary"
-            onclick="selectFamily('primary')"
-            role="listitem" aria-label="Primary family — enter password">
-      <span class="fc-emoji">👨‍👩‍👧‍👦</span>
-      <span class="fc-name" id="fc-name-primary">—</span>
-      <span class="fc-lock"><span class="lock-pip"></span>Password protected</span>
-    </button>
-    <button class="family-card secondary" id="btn-secondary"
-            onclick="selectFamily('secondary')"
-            role="listitem" aria-label="Secondary family — enter password">
-      <span class="fc-emoji">👨‍👩‍👦</span>
-      <span class="fc-name" id="fc-name-secondary">—</span>
-      <span class="fc-lock"><span class="lock-pip"></span>Password protected</span>
-    </button>
-  </div>
+  <div class="group-cards" id="group-cards" role="list"></div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 2 — PASSWORD
-═══════════════════════════════════ -->
+<!-- SCREEN 2 — PASSWORD -->
 <div id="screen-password" class="screen" role="main" aria-label="Enter password">
   <div class="pw-card card" id="pw-card">
     <button class="pw-back" onclick="goWelcome()" aria-label="Back to welcome">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
       Back
     </button>
-    <div class="pw-emoji" id="pw-emoji" aria-hidden="true">🔐</div>
-    <div class="pw-title" id="pw-title">Family</div>
-    <div class="pw-hint">Enter the family password to continue</div>
-    <input
-      type="password"
-      id="pw-input"
-      class="pw-input"
-      placeholder="Password"
-      autocomplete="current-password"
-      aria-label="Family password"
-      onkeydown="onPwKey(event)"
-    />
-    <button class="btn-unlock" id="btn-unlock" onclick="tryUnlock()">
-      Unlock
-    </button>
+    <div class="pw-icon" id="pw-icon" aria-hidden="true"></div>
+    <div class="pw-title" id="pw-title">—</div>
+    <div class="pw-hint">Enter the password to continue</div>
+    <input type="password" id="pw-input" class="pw-input" placeholder="Password" autocomplete="off" aria-label="Password" onkeydown="onPwKey(event)" />
+    <button class="btn-unlock" id="btn-unlock" onclick="tryUnlock()">Unlock</button>
     <div class="pw-lockout" id="pw-lockout" role="alert" aria-live="assertive"></div>
     <div class="pw-error"   id="pw-error"   role="alert" aria-live="polite"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 3 — FAMILY MEMBERS
-═══════════════════════════════════ -->
-<div id="screen-family" class="screen" role="main" aria-label="Family members">
+<!-- SCREEN 3 — SECTION LIST (members or categories) -->
+<div id="screen-family" class="screen" role="main" aria-label="Sections">
   <div class="page-inner" id="family-inner">
+    <div class="hero-bg"><div class="hero-bg-layer" id="hero-layer-family"></div></div>
     <div class="top-bar">
       <div class="tb-family-dot"></div>
       <span class="tb-name" id="tb-name">—</span>
       <span class="tb-timer" id="tb-timer" aria-label="Session time remaining" aria-live="polite"></span>
       <button class="btn-lock" onclick="doLock()" aria-label="Lock portal">🔒 Lock</button>
     </div>
-    <div class="section-eyebrow">Members</div>
-    <div class="members-list" id="members-list" role="list"></div>
+    <div class="page-content">
+      <div class="hero-title-block">
+        <div class="h-title" id="family-hero-title">—</div>
+        <div class="h-sub" id="family-hero-sub">—</div>
+      </div>
+      <div class="section-eyebrow" id="family-eyebrow">Members</div>
+      <div class="members-list" id="members-list" role="list"></div>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 4 — PERSON'S DOCUMENTS
-═══════════════════════════════════ -->
+<!-- SCREEN 4 — ITEMS -->
 <div id="screen-person" class="screen" role="main" aria-label="Documents">
   <div class="page-inner" id="person-inner">
+    <div class="hero-bg"><div class="hero-bg-layer" id="hero-layer-person"></div></div>
     <div class="top-bar">
       <div class="tb-family-dot"></div>
       <span class="tb-name" id="tb-name-person">—</span>
       <span class="tb-timer" id="tb-timer-person" aria-live="polite"></span>
       <button class="btn-lock" onclick="doLock()" aria-label="Lock portal">🔒 Lock</button>
     </div>
-    <div class="person-header card" id="person-header">
-      <button class="btn-back" onclick="goFamily()" aria-label="Back to family list">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        Back
-      </button>
-      <div class="avatar xl" id="ph-avatar" aria-hidden="true"></div>
-      <div class="person-meta">
-        <div class="person-name" id="ph-name">—</div>
-        <div class="person-sub"  id="ph-sub">—</div>
+    <div class="page-content">
+      <div class="person-header card" id="person-header">
+        <button class="btn-back" onclick="goFamily()" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Back
+        </button>
+        <div class="avatar xl" id="ph-avatar" aria-hidden="true"></div>
+        <div class="person-meta">
+          <div class="person-name" id="ph-name">—</div>
+          <div class="person-sub"  id="ph-sub">—</div>
+        </div>
       </div>
+      <div class="section-eyebrow">Documents</div>
+      <div class="docs-grid" id="docs-grid" role="list"></div>
     </div>
-    <div class="section-eyebrow">Documents</div>
-    <div class="docs-grid" id="docs-grid" role="list"></div>
   </div>
 </div>
 
 <script>
-// ── FRAMEBUSTING (clickjacking protection) ────────────────────────────────
-if (window.top !== window.self) {
-  window.top.location = window.self.location;
-}
+// ── FRAMEBUSTING ──
+if (window.top !== window.self) { window.top.location = window.self.location; }
 
-// ── ENCRYPTED CONFIG (injected by build.js) ───────────────────────────────
-const PCFG = {
-  labels: {
-    primary:   "__PRIMARY_LABEL__",
-    secondary: "__SECONDARY_LABEL__"
-  },
-  primary: {
-    salt: "__PRIMARY_SALT__",
-    iv:   "__PRIMARY_IV__",
-    data: "__PRIMARY_DATA__"
-  },
-  secondary: {
-    salt: "__SECONDARY_SALT__",
-    iv:   "__SECONDARY_IV__",
-    data: "__SECONDARY_DATA__"
-  }
-};
+// ── INJECTED AT BUILD TIME ──
+const PCFG = { groups: __GROUPS__ };
+const ICON_SVGS = __ICONS__;
 
-// ── STATE ─────────────────────────────────────────────────────────────────
-let cur          = 'welcome';
-let activeFamily = null;
-let cache        = {};
-let activeMember = null;
-let sesTimer     = null;
-let sesEnd       = null;
-let tickTimer    = null;
-
-// Brute-force lockout (resets when switching family)
-let failCount    = 0;
-let lockoutUntil = 0;
-const MAX_FAILS  = 3;
+// ── STATE ──
+let cur = 'welcome';
+let activeGroupId = null;
+let cache = {};
+let activeSection = null;
+let sesTimer = null, sesEnd = null, tickTimer = null;
+let failCount = 0, lockoutUntil = 0;
+const MAX_FAILS = 3;
 const LOCKOUT_MS = 30 * 1000;
-
 const SESSION_MS = 5 * 60 * 1000;
+const objectUrls = []; // revoked on lock
 
-// ── PERSON COLOUR PALETTE ─────────────────────────────────────────────────
-// Name text colours
-// Person name text — darkened from exact palette hex, all ≥4.5:1 on #FCF9EA
-// P1: #9B8EC7→#6B5EA8  #B4D3D9→#3A7880  #BDA6CE→#6B5090
-// P2: #FFA4A4→#B85050  #BADFDB→#307878  #FFBDBD→#A05050
-const NAME_COLORS  = ['#6B5EA8','#3A7880','#B85050','#6B5090','#307878','#A05050'];
-// Avatar backgrounds — very light tints of exact palette colors
-const AVATAR_BGS   = ['#EAE6F8','#DFF0F3','#FFE8E8','#EDE7F5','#E0F2EF','#FFE8EC'];
-// Avatar text — same as name colors
-const AVATAR_FGS   = ['#6B5EA8','#3A7880','#B85050','#6B5090','#307878','#A05050'];
+const NAME_COLORS = ['#6B5EA8','#3A7880','#B85050','#6B5090','#307878','#A05050'];
+const AVATAR_BGS  = ['#EAE6F8','#DFF0F3','#FFE8E8','#EDE7F5','#E0F2EF','#FFE8EC'];
+const AVATAR_FGS  = NAME_COLORS;
 
-// ── CRYPTO HELPERS ────────────────────────────────────────────────────────
+// ── CRYPTO ──
 function b64(s) { return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
 
 async function deriveKey(pw, salt) {
-  const m = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']
-  );
-  return crypto.subtle.deriveKey(
-    { name:'PBKDF2', salt, iterations:600000, hash:'SHA-256' },
-    m, { name:'AES-GCM', length:256 }, false, ['decrypt']
-  );
+  const m = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name:'PBKDF2', salt, iterations:600000, hash:'SHA-256' }, m, { name:'AES-GCM', length:256 }, false, ['decrypt']);
 }
-
 async function decrypt(encObj, pw) {
   const key = await deriveKey(pw, b64(encObj.salt));
-  const raw = await crypto.subtle.decrypt(
-    { name:'AES-GCM', iv: b64(encObj.iv) }, key, b64(encObj.data)
-  );
+  const raw = await crypto.subtle.decrypt({ name:'AES-GCM', iv: b64(encObj.iv) }, key, b64(encObj.data));
   return JSON.parse(new TextDecoder().decode(raw));
 }
-
-// ── DOM HELPERS ───────────────────────────────────────────────────────────
-function esc(s) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(String(s)));
-  return d.innerHTML;
+// Decrypt a document blob using its own embedded raw key (not password-derived).
+async function decryptFile(item) {
+  const res = await fetch('files/' + item.blob);
+  if (!res.ok) throw new Error('blob fetch failed');
+  const ciphertext = await res.arrayBuffer();
+  const key = await crypto.subtle.importKey('raw', b64(item.key), 'AES-GCM', false, ['decrypt']);
+  const raw = await crypto.subtle.decrypt({ name:'AES-GCM', iv: b64(item.iv) }, key, ciphertext);
+  return new Blob([raw], { type: item.mime || 'application/octet-stream' });
 }
 
-function initials(name) {
-  return name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase();
-}
+// ── DOM HELPERS ──
+function esc(s) { const d = document.createElement('div'); d.appendChild(document.createTextNode(String(s))); return d.innerHTML; }
+function initials(name) { return name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase(); }
+function hashHue(str) { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h % 360; }
+function iconSvg(name) { return ICON_SVGS[name] || ICON_SVGS.generic || ''; }
 
-function avatarHtml(member, sizeClass, idx) {
+function avatarHtml(section, sizeClass, idx) {
   const bg = AVATAR_BGS[idx % AVATAR_BGS.length];
   const fg = AVATAR_FGS[idx % AVATAR_FGS.length];
-  if (member.photo) {
-    return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">`
-         + `<img src="${esc(member.photo)}" alt="${esc(member.name)}" /></div>`;
+  if (section.avatar) {
+    return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}"><img src="${esc(section.avatar)}" alt="${esc(section.label)}" /></div>`;
   }
-  return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">`
-       + `${esc(initials(member.name))}</div>`;
+  if (section.icon) {
+    return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">${iconSvg(section.icon)}</div>`;
+  }
+  return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">${esc(initials(section.label))}</div>`;
 }
 
-// ── FAMILY CONTEXT (colours screens per family) ───────────────────────────
-function applyFamilyCtx(fam) {
-  const add = fam === 'primary' ? 'primary-ctx' : 'secondary-ctx';
-  const rem = fam === 'primary' ? 'secondary-ctx' : 'primary-ctx';
-  ['family-inner','person-inner'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.classList.add(add); el.classList.remove(rem); }
-  });
+// ── THEME CONTEXT ──
+function applyTheme(theme) {
+  document.getElementById('family-inner').dataset.theme = theme;
+  document.getElementById('person-inner').dataset.theme = theme;
 }
 
-// ── SCREEN TRANSITIONS ────────────────────────────────────────────────────
+// ── SCREEN TRANSITIONS ──
 function showScreen(id) {
   if (id === cur) return;
   document.getElementById('screen-' + cur).classList.remove('active');
   document.getElementById('screen-' + id).classList.add('active');
   cur = id;
-  if (id === 'family' || id === 'person') {
-    document.getElementById('screen-' + id).scrollTop = 0;
-  }
+  if (id === 'family' || id === 'person') document.getElementById('screen-' + id).scrollTop = 0;
 }
 
-// ── WELCOME INIT ──────────────────────────────────────────────────────────
+// ── WELCOME ──
 (function initWelcome() {
-  document.getElementById('fc-name-primary').textContent   = PCFG.labels.primary   + ' Family';
-  document.getElementById('fc-name-secondary').textContent = PCFG.labels.secondary + ' Family';
+  const wrap = document.getElementById('group-cards');
+  PCFG.groups.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'group-card';
+    btn.dataset.theme = g.theme;
+    btn.setAttribute('role', 'listitem');
+    btn.setAttribute('aria-label', g.label + ' — enter password');
+    btn.innerHTML =
+        `<div class="gc-hero"></div>`
+      + `<div class="gc-body">`
+      +   `<div class="gc-icon">${iconSvg(g.layout === 'people' ? 'home' : 'map')}</div>`
+      +   `<div class="gc-name">${esc(g.label)}</div>`
+      +   `<div class="gc-lock"><span class="lock-pip"></span>Password protected</div>`
+      + `</div>`;
+    btn.addEventListener('click', () => selectGroup(g.id));
+    wrap.appendChild(btn);
+  });
 })();
 
-// ── FAMILY SELECTION → PASSWORD ───────────────────────────────────────────
-function selectFamily(fam) {
-  activeFamily = fam;
-  failCount    = 0;
-  lockoutUntil = 0;
+function findGroup(id) { return PCFG.groups.find(g => g.id === id); }
+
+// ── GROUP SELECT → PASSWORD ──
+function selectGroup(id) {
+  activeGroupId = id;
+  failCount = 0; lockoutUntil = 0;
+  const g = findGroup(id);
 
   const card = document.getElementById('pw-card');
-  card.classList.toggle('primary',   fam === 'primary');
-  card.classList.toggle('secondary', fam === 'secondary');
-
-  document.getElementById('pw-emoji').textContent = fam === 'primary' ? '👨‍👩‍👧‍👦' : '👨‍👩‍👦';
-  document.getElementById('pw-title').textContent = PCFG.labels[fam] + ' Family';
+  card.dataset.theme = g.theme;
+  document.getElementById('pw-icon').innerHTML = iconSvg(g.layout === 'people' ? 'home' : 'map');
+  document.getElementById('pw-title').textContent = g.label;
   document.getElementById('pw-input').value = '';
   hideLockout(); hideError();
   showScreen('password');
   setTimeout(() => document.getElementById('pw-input').focus(), 360);
 }
 
-function goWelcome() { activeFamily = null; showScreen('welcome'); }
-function onPwKey(e)  { if (e.key === 'Enter') tryUnlock(); }
+function goWelcome() { activeGroupId = null; showScreen('welcome'); }
+function onPwKey(e) { if (e.key === 'Enter') tryUnlock(); }
 
 function hideError()   { const el = document.getElementById('pw-error');   el.textContent = ''; el.classList.remove('show'); }
 function showError(m)  { const el = document.getElementById('pw-error');   el.textContent = m;  el.classList.add('show'); }
 function hideLockout() { const el = document.getElementById('pw-lockout'); el.textContent = ''; el.classList.remove('show'); }
 function showLockout(m){ const el = document.getElementById('pw-lockout'); el.textContent = m;  el.classList.add('show'); }
 
-// ── UNLOCK (with 3-attempt brute-force cooldown) ──────────────────────────
+// ── UNLOCK ──
 async function tryUnlock() {
   const now = Date.now();
   if (now < lockoutUntil) {
-    const secs = Math.ceil((lockoutUntil - now) / 1000);
-    showLockout(`Too many attempts — try again in ${secs}s.`);
+    showLockout(`Too many attempts — try again in ${Math.ceil((lockoutUntil - now) / 1000)}s.`);
     return;
   }
-
   const input = document.getElementById('pw-input');
-  const btn   = document.getElementById('btn-unlock');
-  const pw    = input.value;
+  const btn = document.getElementById('btn-unlock');
+  const pw = input.value;
   if (!pw) return;
 
   btn.disabled = true;
@@ -795,23 +609,22 @@ async function tryUnlock() {
   hideError(); hideLockout();
 
   try {
-    let familyData;
+    const g = findGroup(activeGroupId);
+    let groupData;
     try {
-      familyData = await decrypt(PCFG[activeFamily], pw);
+      groupData = await decrypt(g, pw);
     } catch {
       failCount++;
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);
       input.value = '';
-
       if (failCount >= MAX_FAILS) {
         lockoutUntil = Date.now() + LOCKOUT_MS;
-        failCount    = 0;
+        failCount = 0;
         showLockout('Too many incorrect attempts — locked for 30 seconds.');
         input.focus();
         return;
       }
-
       const left = MAX_FAILS - failCount;
       showError(`Incorrect password — ${left} attempt${left === 1 ? '' : 's'} remaining.`);
       input.focus();
@@ -819,139 +632,216 @@ async function tryUnlock() {
     }
 
     failCount = 0;
-    cache[activeFamily] = familyData;
+    cache[activeGroupId] = groupData;
     input.value = '';
-    applyFamilyCtx(activeFamily);
-    renderFamilyScreen(familyData);
+    applyTheme(g.theme);
+    renderFamilyScreen(groupData);
     startSession();
     showScreen('family');
-
   } finally {
-    btn.disabled    = false;
+    btn.disabled = false;
     btn.textContent = 'Unlock';
   }
 }
 
-// ── SESSION TIMER ─────────────────────────────────────────────────────────
+// ── SESSION TIMER ──
 const ACTIVITY_EVENTS = ['mousedown','keydown','touchstart','scroll','click'];
-
 function startSession() {
   sesEnd = Date.now() + SESSION_MS;
   clearTimeout(sesTimer); clearInterval(tickTimer);
-  sesTimer  = setTimeout(doLock, SESSION_MS);
-  tickTimer = setInterval(tick, 1000);
-  ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, bump, { passive:true }));
-}
-
-function bump() {
-  sesEnd = Date.now() + SESSION_MS;
-  clearTimeout(sesTimer);
   sesTimer = setTimeout(doLock, SESSION_MS);
+  tickTimer = setInterval(tick, 1000);
+  ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, bump, { passive: true }));
 }
-
+function bump() { sesEnd = Date.now() + SESSION_MS; clearTimeout(sesTimer); sesTimer = setTimeout(doLock, SESSION_MS); }
 function tick() {
   if (!sesEnd) return;
   const rem = Math.max(0, Math.ceil((sesEnd - Date.now()) / 1000));
-  const m   = Math.floor(rem / 60), s = rem % 60;
-  const txt = m + ':' + String(s).padStart(2,'0');
+  const m = Math.floor(rem / 60), s = rem % 60;
+  const txt = m + ':' + String(s).padStart(2, '0');
   const cls = rem <= 30 ? 'crit' : rem <= 60 ? 'warn' : '';
-  ['tb-timer','tb-timer-person'].forEach(id => {
+  ['tb-timer', 'tb-timer-person'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = txt; el.className = 'tb-timer ' + cls; }
   });
 }
+function stopSession() { clearTimeout(sesTimer); clearInterval(tickTimer); sesEnd = null; ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, bump)); }
 
-function stopSession() {
-  clearTimeout(sesTimer); clearInterval(tickTimer);
-  sesEnd = null;
-  ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, bump));
+function revokeAllObjectUrls() {
+  objectUrls.forEach(u => URL.revokeObjectURL(u));
+  objectUrls.length = 0;
 }
 
 function doLock() {
   stopSession();
-  cache = {}; activeMember = null;
+  cache = {}; activeSection = null; activeGroupId = null;
+  revokeAllObjectUrls();
   document.getElementById('members-list').innerHTML = '';
-  document.getElementById('docs-grid').innerHTML    = '';
+  document.getElementById('docs-grid').innerHTML = '';
   showScreen('welcome');
 }
 
-// ── FAMILY SCREEN ─────────────────────────────────────────────────────────
+// ── SECTION LIST SCREEN (members or categories) ──
 function renderFamilyScreen(data) {
-  const label = data.familyName + ' Family';
-  document.getElementById('tb-name').textContent        = label;
-  document.getElementById('tb-name-person').textContent = label;
+  document.getElementById('tb-name').textContent = data.label;
+  document.getElementById('tb-name-person').textContent = data.label;
+  document.getElementById('family-hero-title').textContent = data.label;
+  document.getElementById('family-eyebrow').textContent = data.layout === 'people' ? 'Members' : 'Categories';
+
+  const totalItems = data.sections.reduce((n, s) => n + s.items.length, 0);
+  document.getElementById('family-hero-sub').textContent =
+    data.layout === 'people'
+      ? `${data.sections.length} member${data.sections.length === 1 ? '' : 's'} · ${totalItems} document${totalItems === 1 ? '' : 's'}`
+      : `${data.sections.length} categor${data.sections.length === 1 ? 'y' : 'ies'} · ${totalItems} item${totalItems === 1 ? '' : 's'}`;
 
   const list = document.getElementById('members-list');
   list.innerHTML = '';
-  data.members.forEach((m, i) => {
+  data.sections.forEach((s, i) => {
     const btn = document.createElement('button');
     btn.className = 'member-btn';
-    btn.setAttribute('role','listitem');
-    btn.setAttribute('aria-label', `Open ${m.name}'s documents`);
+    btn.setAttribute('role', 'listitem');
+    btn.setAttribute('aria-label', `Open ${s.label}`);
     btn.style.transitionDelay = (i * 45) + 'ms';
     btn.innerHTML =
-        avatarHtml(m, 'lg', i)
+        avatarHtml(s, 'lg', i)
       + `<div class="member-info">`
-      +   `<div class="member-name" style="color:${NAME_COLORS[i % NAME_COLORS.length]}">${esc(m.name)}</div>`
-      +   `<div class="member-sub">${m.documents.length} document${m.documents.length === 1 ? '' : 's'}</div>`
+      +   `<div class="member-name" style="color:${NAME_COLORS[i % NAME_COLORS.length]}">${esc(s.label)}</div>`
+      +   `<div class="member-sub">${s.items.length} item${s.items.length === 1 ? '' : 's'}</div>`
       + `</div>`
       + `<div class="chevron" aria-hidden="true">›</div>`;
-    btn.addEventListener('click', () => openMember(m, i));
+    btn.addEventListener('click', () => openSection(data, s, i));
     list.appendChild(btn);
   });
 }
 
-// ── PERSON SCREEN ─────────────────────────────────────────────────────────
-function openMember(member, colorIdx) {
-  activeMember = member;
+// ── ITEMS SCREEN ──
+function openSection(groupData, section, colorIdx) {
+  activeSection = section;
   bump();
 
   const av = document.getElementById('ph-avatar');
   av.style.background = AVATAR_BGS[colorIdx % AVATAR_BGS.length];
-  av.style.color      = AVATAR_FGS[colorIdx % AVATAR_FGS.length];
-  if (member.photo) {
-    av.innerHTML = `<img src="${esc(member.photo)}" alt="${esc(member.name)}" />`;
+  av.style.color = AVATAR_FGS[colorIdx % AVATAR_FGS.length];
+  if (section.avatar) {
+    av.innerHTML = `<img src="${esc(section.avatar)}" alt="${esc(section.label)}" />`;
+  } else if (section.icon) {
+    av.innerHTML = iconSvg(section.icon);
   } else {
-    av.textContent = initials(member.name);
+    av.textContent = initials(section.label);
   }
 
-  document.getElementById('ph-name').textContent = member.name;
-  document.getElementById('ph-name').style.color  = NAME_COLORS[colorIdx % NAME_COLORS.length];
+  document.getElementById('ph-name').textContent = section.label;
+  document.getElementById('ph-name').style.color = NAME_COLORS[colorIdx % NAME_COLORS.length];
 
-  const linked = member.documents.filter(d => d.url && d.url !== 'PASTE_LINK_HERE').length;
+  const active = section.items.filter(it => it.kind !== 'pending').length;
   document.getElementById('ph-sub').textContent =
-    linked === member.documents.length
-      ? `${linked} document${linked === 1 ? '' : 's'} linked`
-      : `${linked} of ${member.documents.length} documents linked`;
+    active === section.items.length
+      ? `${active} item${active === 1 ? '' : 's'}`
+      : `${active} of ${section.items.length} items added`;
 
   const grid = document.getElementById('docs-grid');
   grid.innerHTML = '';
-  member.documents.forEach(doc => {
-    const hasUrl = doc.url && doc.url !== 'PASTE_LINK_HERE';
-    const el     = document.createElement(hasUrl ? 'a' : 'div');
-    el.className = 'doc-btn' + (hasUrl ? '' : ' inactive');
-    el.setAttribute('role','listitem');
-    if (hasUrl) {
-      el.href   = doc.url;
-      el.target = '_blank';
-      el.rel    = 'noopener noreferrer';
-      el.setAttribute('aria-label', `Open ${doc.name}`);
-    } else {
-      el.setAttribute('aria-label', `${doc.name} — not yet linked`);
-    }
-    el.innerHTML =
-        `<span class="doc-icon" aria-hidden="true">${esc(doc.icon)}</span>`
-      + `<span class="doc-name">${esc(doc.name)}</span>`
-      + (!hasUrl ? `<span class="doc-na">Not linked yet</span>` : '');
-    grid.appendChild(el);
-  });
+  section.items.forEach(item => grid.appendChild(renderItemCard(item)));
 
   showScreen('person');
 }
 
+function renderItemCard(item) {
+  const iconHtml = ICON_SVGS[item.icon]
+    ? `<span class="doc-icon" aria-hidden="true">${iconSvg(item.icon)}</span>`
+    : `<span class="doc-icon emoji" aria-hidden="true">${esc(item.icon || '📄')}</span>`;
+  const descHtml = item.description ? `<span class="doc-desc">${esc(item.description)}</span>` : '';
+
+  if (item.kind === 'pending') {
+    const el = document.createElement('div');
+    el.className = 'doc-btn inactive';
+    el.setAttribute('role', 'listitem');
+    el.setAttribute('aria-label', `${item.title} — not added yet`);
+    el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml + `<span class="doc-na">Not added yet</span>`;
+    return el;
+  }
+
+  if (item.kind === 'link') {
+    const el = document.createElement('a');
+    el.className = 'doc-btn';
+    el.href = item.url; el.target = '_blank'; el.rel = 'noopener noreferrer';
+    el.setAttribute('role', 'listitem');
+    el.setAttribute('aria-label', `Open ${item.title}`);
+    const thumbHtml = item.thumb ? `<img class="doc-thumb" alt="">` : '';
+    el.innerHTML = thumbHtml + iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml;
+    if (item.thumb) loadThumb(el, item.thumb);
+    return el;
+  }
+
+  // kind === 'file'
+  const el = document.createElement('button');
+  el.className = 'doc-btn';
+  el.type = 'button';
+  el.setAttribute('role', 'listitem');
+  el.setAttribute('aria-label', `Open ${item.title}`);
+  el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml;
+  el.addEventListener('click', () => openFileItem(el, item, iconHtml, descHtml));
+  return el;
+}
+
+async function loadThumb(linkEl, thumb) {
+  try {
+    const blob = await decryptFile(thumb);
+    const url = URL.createObjectURL(blob);
+    objectUrls.push(url);
+    const img = linkEl.querySelector('img.doc-thumb');
+    if (img) img.src = url;
+  } catch { /* thumb is decorative — silently skip on failure */ }
+}
+
+async function openFileItem(el, item, iconHtml, descHtml) {
+  const original = el.innerHTML;
+  el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml + `<div class="spinner-dark"></div>`;
+  try {
+    const blob = await decryptFile(item);
+    const url = URL.createObjectURL(blob);
+    objectUrls.push(url);
+    const isViewable = /^image\//.test(item.mime) || item.mime === 'application/pdf';
+    if (isViewable) {
+      window.open(url, '_blank', 'noopener');
+    } else {
+      const a = document.createElement('a');
+      a.href = url; a.download = item.title || 'document';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    el.innerHTML = original;
+  } catch {
+    el.innerHTML = original;
+    el.classList.add('err');
+    setTimeout(() => el.classList.remove('err'), 500);
+  }
+}
+
 function goFamily() { bump(); showScreen('family'); }
 
-// ── BACK BUTTON TRAP ──────────────────────────────────────────────────────
+// ── PARALLAX (respects prefers-reduced-motion) ──
+(function initParallax() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const pairs = [
+    ['screen-family', 'hero-layer-family'],
+    ['screen-person', 'hero-layer-person'],
+  ];
+  pairs.forEach(([screenId, layerId]) => {
+    const screenEl = document.getElementById(screenId);
+    const layerEl = document.getElementById(layerId);
+    let raf = null;
+    screenEl.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        const y = Math.min(screenEl.scrollTop, 200);
+        layerEl.style.transform = `translateY(${y * 0.25}px)`;
+        raf = null;
+      });
+    }, { passive: true });
+  });
+})();
+
+// ── BACK BUTTON TRAP ──
 history.pushState(null, '', location.pathname);
 window.addEventListener('popstate', () => {
   history.pushState(null, '', location.pathname);

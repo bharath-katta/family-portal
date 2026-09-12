@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Family Portal — Admin</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
+    background: #FCF9EA; color: #2A2535; min-height: 100vh;
+  }
+  header {
+    background: #fff; border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { font-size: 17px; margin: 0; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 20px; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tab {
+    padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(0,0,0,0.12);
+    background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; color: #555;
+  }
+  .tab.active { background: #2A2535; color: #fff; border-color: #2A2535; }
+  .card { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+  .card h2 { font-size: 15px; margin: 0 0 12px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  input, select, textarea {
+    font-family: inherit; font-size: 13px; padding: 9px 12px;
+    border: 1.5px solid rgba(0,0,0,0.14); border-radius: 9px; background: #FBFAF4;
+  }
+  textarea { resize: vertical; min-height: 40px; width: 100%; }
+  button.btn {
+    font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 16px;
+    border-radius: 9px; border: none; background: #3A7880; color: #fff; cursor: pointer;
+  }
+  button.btn.secondary { background: #EFEBE0; color: #2A2535; }
+  button.btn.danger { background: #B85050; }
+  button.btn:disabled { opacity: .5; cursor: not-allowed; }
+  .section-block { border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #FFFEFA; }
+  .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .section-head .label { font-weight: 700; font-size: 14px; }
+  .items { display: flex; flex-direction: column; gap: 8px; }
+  .item-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #F6F3E8; border-radius: 9px; }
+  .item-row .meta { flex: 1; min-width: 0; }
+  .item-row .t { font-weight: 700; font-size: 13px; }
+  .item-row .d { font-size: 11.5px; color: #7B748E; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 999px; background: #E6E2D6; color: #555; font-weight: 700; text-transform: uppercase; }
+  .drop { border: 2px dashed rgba(0,0,0,0.18); border-radius: 12px; padding: 22px; text-align: center; color: #7B748E; font-size: 13px; margin-bottom: 10px; cursor: pointer; }
+  .drop.over { border-color: #3A7880; background: #EDF5F7; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+  .footer-publish {
+    position: sticky; bottom: 0; background: rgba(252,249,234,0.92); backdrop-filter: blur(10px);
+    padding: 14px 20px; border-top: 1px solid rgba(0,0,0,0.08); display: flex; justify-content: center; gap: 12px;
+  }
+  .toast {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    background: #2A2535; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 100; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; }
+  select.icon-pick { min-width: 130px; }
+  .hint { font-size: 11.5px; color: #7B748E; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔧 Family Portal — Admin</h1>
+  <button class="btn secondary" onclick="addGroupPrompt()">+ New group</button>
+</header>
+
+<div class="wrap">
+  <div class="tabs" id="tabs"></div>
+  <div id="groupPanel"></div>
+</div>
+
+<div class="footer-publish">
+  <button class="btn" id="publishBtn" onclick="publish()">🚀 Publish to zerostress.in</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TOKEN = new URLSearchParams(location.search).get('t');
+let STATE = { groups: [] };
+let ICON_NAMES = [];
+let activeGroupId = null;
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { ...(opts.headers || {}), 'X-Admin-Token': TOKEN },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+function toast(msg, ms = 2600) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+async function refresh() {
+  STATE = await api('/api/state?t=' + TOKEN);
+  if (!activeGroupId && STATE.groups.length) activeGroupId = STATE.groups[0].id;
+  renderTabs();
+  renderGroup();
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  STATE.groups.forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (g.id === activeGroupId ? ' active' : '');
+    b.textContent = g.label;
+    b.onclick = () => { activeGroupId = g.id; renderTabs(); renderGroup(); };
+    tabs.appendChild(b);
+  });
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
+function fmtSize(n) { if (!n) return ''; const kb = n / 1024; return kb < 1024 ? kb.toFixed(0) + ' KB' : (kb / 1024).toFixed(1) + ' MB'; }
+
+function iconOptions(selected) {
+  return ICON_NAMES.map(n => `<option value="${n}" ${n === selected ? 'selected' : ''}>${n}</option>`).join('');
+}
+
+function renderGroup() {
+  const panel = document.getElementById('groupPanel');
+  const g = STATE.groups.find(x => x.id === activeGroupId);
+  if (!g) { panel.innerHTML = '<p>No groups yet — add one above.</p>'; return; }
+
+  panel.innerHTML = `
+    <div class="card">
+      <h2>${esc(g.label)} <span class="badge">${g.layout}</span> <span class="badge">${g.theme}</span></h2>
+      <div class="row">
+        <button class="btn secondary" onclick="addSectionPrompt('${g.id}')">+ Add ${g.layout === 'people' ? 'member' : 'category'}</button>
+      </div>
+    </div>
+    <div id="sections"></div>
+  `;
+
+  const sectionsEl = document.getElementById('sections');
+  g.sections.forEach(s => {
+    const block = document.createElement('div');
+    block.className = 'section-block';
+    block.innerHTML = `
+      <div class="section-head">
+        <span class="label">${esc(s.label)}</span>
+        <span class="row">
+          <button class="btn secondary" data-act="rename">Rename</button>
+          <button class="btn danger" data-act="delete">Delete</button>
+        </span>
+      </div>
+      <div class="items" id="items-${s.id}"></div>
+      <details style="margin-top:10px;">
+        <summary style="cursor:pointer;font-size:12.5px;font-weight:700;color:#3A7880;">+ Add item to ${esc(s.label)}</summary>
+        <div style="margin-top:10px;">
+          <div class="drop" id="drop-${s.id}">
+            Drag a file here, or<br/>
+            <button type="button" class="btn" style="margin-top:8px;" data-choose>Choose File…</button>
+            <div class="hint">PDF, image, CSV — any format</div>
+          </div>
+          <input type="file" id="file-${s.id}" style="display:none" />
+          <div class="grid2">
+            <input type="text" placeholder="Title" id="title-${s.id}" />
+            <select class="icon-pick" id="icon-${s.id}"><option value="generic">generic</option></select>
+          </div>
+          <textarea placeholder="Short description (two lines shown on the site)" id="desc-${s.id}" maxlength="140"></textarea>
+          <div class="hint">Drop a file above to upload it, or fill title/url below and click "Add link" for a booking link / YouTube video.</div>
+          <div class="row" style="margin-top:8px;">
+            <input type="text" placeholder="https:// link (optional — for a link item instead of a file)" id="url-${s.id}" style="flex:1;min-width:220px;" />
+            <button class="btn secondary" onclick="addLink('${g.id}','${s.id}')">Add link</button>
+            <button class="btn secondary" onclick="addYoutube('${g.id}','${s.id}')">Add YouTube</button>
+          </div>
+        </div>
+      </details>
+    `;
+    block.querySelector('[data-act="rename"]').onclick = () => renameSection(g.id, s);
+    block.querySelector('[data-act="delete"]').onclick = () => deleteSection(g.id, s);
+    sectionsEl.appendChild(block);
+
+    const iconSel = block.querySelector(`#icon-${s.id}`);
+    iconSel.innerHTML = iconOptions(s.icon);
+
+    const itemsEl = block.querySelector(`#items-${s.id}`);
+    s.items.forEach((it, idx) => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <span class="badge">${it.kind}</span>
+        <div class="meta">
+          <div class="t">${esc(it.title)}</div>
+          <div class="d">${esc(it.description || '')}${it.size ? ' · ' + fmtSize(it.size) : ''}</div>
+        </div>
+        ${it.kind === 'file' ? `<button class="btn secondary" data-replace="${idx}">Replace</button>` : ''}
+        <button class="btn danger" data-delete="${idx}">Delete</button>
+      `;
+      if (it.kind === 'file') {
+        row.querySelector('[data-replace]').onclick = () => replaceFilePrompt(g.id, s.id, idx);
+      }
+      row.querySelector('[data-delete]').onclick = () => deleteItem(g.id, s.id, idx);
+      itemsEl.appendChild(row);
+    });
+
+    // drag-drop wiring
+    const dropEl = block.querySelector(`#drop-${s.id}`);
+    const fileEl = block.querySelector(`#file-${s.id}`);
+    block.querySelector(`#drop-${s.id} [data-choose]`).onclick = (e) => { e.stopPropagation(); fileEl.click(); };
+    fileEl.onchange = () => { if (fileEl.files[0]) uploadFile(g.id, s.id, fileEl.files[0]); };
+    ['dragover', 'dragenter'].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.remove('over'); }));
+    dropEl.addEventListener('drop', e => {
+      const f = e.dataTransfer.files[0];
+      if (f) uploadFile(g.id, s.id, f);
+    });
+  });
+}
+
+async function uploadFile(groupId, sectionId, file, replaceIndex) {
+  const title = document.getElementById(`title-${sectionId}`)?.value || file.name;
+  const description = document.getElementById(`desc-${sectionId}`)?.value || '';
+  const icon = document.getElementById(`icon-${sectionId}`)?.value || 'generic';
+  const q = new URLSearchParams({ groupId, sectionId, title, description, icon, filename: file.name });
+  if (replaceIndex !== undefined) q.set('replaceIndex', replaceIndex);
+  toast('Encrypting & uploading…');
+  try {
+    STATE = await api(`/api/upload-file?${q}`, { method: 'POST', body: file });
+    renderTabs(); renderGroup();
+    toast('Added — remember to Publish when ready.');
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+function replaceFilePrompt(groupId, sectionId, idx) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = () => { if (input.files[0]) uploadFile(groupId, sectionId, input.files[0], idx); };
+  input.click();
+}
+
+async function addLink(groupId, sectionId) {
+  const title = document.getElementById(`title-${sectionId}`).value.trim();
+  const description = document.getElementById(`desc-${sectionId}`).value;
+  const icon = document.getElementById(`icon-${sectionId}`).value;
+  const url = document.getElementById(`url-${sectionId}`).value.trim();
+  if (!title || !url) return toast('Title and URL are required for a link.');
+  try {
+    STATE = await api('/api/add-link', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groupId, sectionId, title, description, icon, url }) });
+    renderTabs(); renderGroup();
+    toast('Link added.');
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+async function addYoutube(groupId, sectionId) {
+  const title = document.getElementById(`title-${sectionId}`).value.trim();
+  const description = document.getElementById(`desc-${sectionId}`).value;
+  const url = document.getElementById(`url-${sectionId}`).value.trim();
+  if (!title || !url) return toast('Title and URL are required.');
+  toast('Fetching thumbnail…');
+  try {
+    STATE = await api('/api/add-youtube', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groupId, sectionId, title, description, url }) });
+    renderTabs(); renderGroup();
+    toast('Video added.');
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+async function deleteItem(groupId, sectionId, itemIndex) {
+  if (!confirm('Delete this item? This cannot be undone.')) return;
+  try {
+    STATE = await api('/api/delete-item', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groupId, sectionId, itemIndex }) });
+    renderTabs(); renderGroup();
+    toast('Deleted.');
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+async function addSectionPrompt(groupId) {
+  const label = prompt('Name (e.g. "Flight Tickets" or a person\'s name):');
+  if (!label) return;
+  const id = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('s' + Date.now());
+  const icon = prompt('Icon name (leave blank for generic). Options: ' + ICON_NAMES.join(', '), 'generic') || 'generic';
+  try {
+    STATE = await api('/api/section', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groupId, action: 'add', sectionId: id, label, icon }) });
+    renderTabs(); renderGroup();
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+async function renameSection(groupId, section) {
+  const label = prompt('New name:', section.label);
+  if (!label) return;
+  try {
+    STATE = await api('/api/section', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groupId, action: 'rename', sectionId: section.id, label }) });
+    renderTabs(); renderGroup();
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+async function deleteSection(groupId, section) {
+  if (!confirm(`Delete "${section.label}" and everything in it? This cannot be undone.`)) return;
+  try {
+    STATE = await api('/api/section', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groupId, action: 'delete', sectionId: section.id }) });
+    renderTabs(); renderGroup();
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+async function addGroupPrompt() {
+  const label = prompt('New group name (e.g. "Kerala Trip 2027"):');
+  if (!label) return;
+  const id = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('g' + Date.now());
+  const layout = confirm('OK = organise by category (like a trip). Cancel = organise by person (like a family).') ? 'categories' : 'people';
+  const theme = prompt('Theme — one of: blue, coral, teal', 'teal') || 'teal';
+  try {
+    STATE = await api('/api/add-group', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, label, layout, theme }) });
+    activeGroupId = id;
+    renderTabs(); renderGroup();
+    toast('Group added. It will need its own password next time you Publish.');
+  } catch (e) { toast('Failed: ' + e.message); }
+}
+
+async function publish() {
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true;
+  toast('Publishing — check your terminal for password prompts…', 60000);
+  try {
+    await api('/api/publish', { method: 'POST' });
+    toast('Published! Live on zerostress.in shortly.', 4000);
+  } catch (e) {
+    toast('Publish failed: ' + e.message, 6000);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+(async function init() {
+  if (!TOKEN) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif;">Missing admin token in URL. Restart with ./admin.sh</p>'; return; }
+  const iconsRes = await api('/api/icons?t=' + TOKEN);
+  ICON_NAMES = iconsRes.icons;
+  await refresh();
+})();
+</script>
+</body>
+</html>
