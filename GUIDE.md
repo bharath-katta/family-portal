@@ -6,18 +6,34 @@
 ## HOW THE WHOLE THING WORKS (read this first)
 
 ```
-Your Mac                          GitHub (public, but safe)
-─────────────────────             ──────────────────────────
-src/config.json      ──build──►  dist/index.html  ──►  zerostress.in
-src/photos/          (local)      (AES-256 encrypted;    (your website)
-src/template.html    (never       unreadable without
-build.js             pushed)      the password)
+Your Mac                              GitHub (public, but safe)
+─────────────────────                 ──────────────────────────
+src/config.json         ──build──►   dist/index.html   ──►  zerostress.in
+src/photos/             (local)       dist/files/*.bin       (your website)
+src/template.html       (never        (all AES-256 encrypted;
+build.js, admin.js      pushed)        unreadable without
+                                        the right password)
 ```
 
-- **You edit** `src/config.json` to change names, links, photos.
-- **You run** `./build.sh` — it asks for both passwords and produces one encrypted file.
-- **You push** that one file to GitHub — it goes live in ~60 seconds.
-- **Nobody** — not GitHub, not Google, not Claude — can read the content without your passwords.
+The site is organised as **groups** — as many as you like, each with its own
+password (e.g. your two families, plus "Kerala Trip 2026"). Each group holds
+**sections** (family members, or trip categories like "Flight Tickets"), and
+each section holds **items** — an uploaded document, an external link, or a
+YouTube video.
+
+- **You use** `./admin.sh` day to day — drag-and-drop files, write titles and
+  descriptions, add sections and groups, all from a page in your browser.
+  This is the normal way to update the site — see PART 7.
+- **Editing `src/config.json` by hand** still works for anything the admin
+  tool doesn't cover (Step 4, and the "Advanced" note in PART 7).
+- **You run** `./build.sh` (or click Publish in the admin tool, which runs it
+  for you) — it asks for each group's password and produces the encrypted
+  site.
+- **You push** to GitHub — it goes live in ~60 seconds.
+- **Nobody** — not GitHub, not Google, not Claude — can read the content
+  without your passwords. Every document is encrypted individually, not just
+  the list of names — so the password is the *only* way in, not a Drive link
+  someone might stumble onto.
 
 ---
 
@@ -78,45 +94,50 @@ git config --global user.email "bharathmkatta@gmail.com"
 
 On your Mac, open **Finder**, go to:
 ```
-Documents → claude_personal → family-portal → src → config.json
+Documents → family-portal → src → config.json
 ```
 
 Right-click `config.json` → **Open With → TextEdit**
 
-You will see all the family member names (Rohan Mehta, Priya Mehta, etc.). Replace each placeholder name with your real family member's name.
+The file is a list of **groups**, each with **sections**, each with **items**.
+A family group looks like this (shortened):
 
-**Example — changing a name:**
-Before:
-```
-"name": "Rohan Mehta",
-```
-After:
-```
-"name": "Dad",
-```
-or
-```
-"name": "Rajesh Kumar",
+```json
+{
+  "id": "primary", "label": "Sharma Family", "layout": "people", "theme": "blue",
+  "sections": [
+    { "id": "primary-member-0", "label": "Dad", "avatar": null, "items": [ ... ] }
+  ]
+}
 ```
 
-**Rules when editing config.json:**
+A trip group looks like this — same shape, `layout` is `"categories"` instead:
+
+```json
+{
+  "id": "kerala2026", "label": "Kerala Trip 2026", "layout": "categories", "theme": "teal",
+  "sections": [
+    { "id": "flights", "label": "Flight Tickets", "icon": "flight", "items": [ ... ] }
+  ]
+}
+```
+
+**Rules when editing config.json by hand:**
 - Keep the quotes `"` around every value
 - Keep the commas at the end of lines (except the last item in a group)
 - Don't delete the `{`, `}`, `[`, `]` brackets
 - Save when done: ⌘S
 
-You can also change the family group names:
-```
-"familyName": "Primary",   ← change to e.g. "Sharma Family"
-```
-```
-"familyName": "Secondary", ← change to e.g. "Nair Family"
-```
+In practice, you'll rarely need to hand-edit this file — adding documents,
+renaming sections, and adding whole new groups is all done through
+`./admin.sh` (PART 7). Hand-editing is mainly for renaming an existing
+`label`, or changing a group's `theme` (one of `blue`, `coral`, `teal`).
 
-### Step 5 — Leave document links as PASTE_LINK_HERE for now
+### Step 5 — Items with nothing added yet
 
-You will fill in the Google Drive links later (Step 9). For now, leave them.
-When you open a person's documents page, buttons with no link will show "Not linked yet" and will be greyed out — this is expected.
+A section can hold items that are just placeholders — `{"kind":"pending", ...}`
+— until you add the real file or link. On the site these show as greyed-out
+"Not added yet" tiles. This is expected and fine to leave for later.
 
 ---
 
@@ -128,30 +149,41 @@ Open **Terminal** and run:
 
 ```bash
 # Navigate to the family-portal folder
-cd ~/Documents/claude_personal/family-portal
+cd ~/Documents/family-portal
 
 # Run the build script
 ./build.sh
 ```
 
-The script will:
-1. Ask you to type a password for the Primary family (you won't see the letters — this is normal security behaviour)
+The script will, for **each group** in your config:
+1. Ask you to type a password for that group (you won't see the letters — this is normal security behaviour)
 2. Ask you to confirm that password
-3. Ask you to type a password for the Secondary family
-4. Ask you to confirm that password
-5. Encrypt everything and create `dist/index.html`
+3. Encrypt that group and move to the next one
+
+At the end it writes `dist/index.html` plus anything under `dist/files/`.
 
 **Choose strong passwords** — a meaningful phrase works well (e.g. `SunsetFamily2025!`).
 **Write your passwords down** and store them safely — they cannot be recovered.
+Changing a password later is just running the build again and typing a new
+one — you never need the old one.
 
 ### Step 7 — Test it locally
 
-1. Open Finder → `Documents/claude_personal/family-portal/dist/`
-2. Double-click `index.html`
-3. It will open in your browser
-4. You should see the beautiful welcome screen with two family buttons
-5. Click a family button, enter the password — verify it works
-6. Check a person's page — the "Not linked yet" buttons are expected
+Documents are fetched separately from the page now, so double-clicking
+`index.html` directly (a `file://` link) will show the welcome screen and
+unlock fine, but any file you open will fail to load. Serve it properly instead:
+
+```bash
+cd ~/Documents/family-portal/dist
+python3 -m http.server 8080
+```
+
+Then open **http://localhost:8080** in your browser.
+
+1. You should see one card per group (however many you've configured)
+2. Click a group, enter its password — verify it works
+3. Open a section and confirm items load — the "Not added yet" tiles are expected for anything you haven't filled in
+4. Press Ctrl+C in Terminal when you're done testing
 
 ---
 
@@ -163,7 +195,7 @@ Open **Terminal**:
 
 ```bash
 # Go to the project folder
-cd ~/Documents/claude_personal/family-portal
+cd ~/Documents/family-portal
 
 # Initialise git (only needed first time)
 git init
@@ -175,10 +207,10 @@ git branch -M main
 git remote add origin https://github.com/bharath-katta/family-portal.git
 
 # Add the files to commit
-git add dist/index.html
-git add src/template.html
-git add build.js
-git add build.sh
+git add dist/
+git add src/template.html src/admin.html
+git add build.js admin.js admin.sh migrate-config.js
+git add lib/
 git add .gitignore
 git add .github/
 
@@ -191,12 +223,21 @@ git push -u origin main
 
 **Note on GitHub password:** GitHub no longer accepts your account password here.
 You need a Personal Access Token instead:
-1. Go to: https://github.com/settings/tokens/new
-2. Give it a name like "family-portal"
-3. Tick **"repo"** under scopes
-4. Click Generate token
-5. Copy the token (looks like `ghp_xxxxxxxxxxxx`)
-6. Use this token as the "password" when Terminal asks
+1. Go to: https://github.com/settings/tokens?type=beta (fine-grained — safer than the classic kind)
+2. Click **Generate new token**, name it "family-portal"
+3. Under **Repository access** → "Only select repositories" → choose `family-portal`
+4. Under **Permissions** → set **Contents** to **Read and write**, and
+   **Workflows** to **Read and write** (needed because this project's
+   `.github/workflows/deploy.yml` is part of what gets pushed — a token
+   without this scope gets rejected specifically on that file)
+5. Set an expiry, click **Generate token**, and copy it immediately — it's
+   only shown once
+6. Use this token as the "password" when Terminal asks (username is your
+   GitHub username, e.g. `bharath-katta`)
+
+Once you've entered it successfully, macOS Keychain remembers it (if you ran
+`git config --global credential.helper osxkeychain`), so you won't be asked
+again until the token expires.
 
 ### Step 9 — Enable GitHub Pages
 
@@ -258,89 +299,79 @@ In Wix:
 
 ## PART 7 — UPDATING CONTENT (do whenever you want to change something)
 
-### How to add Google Drive document links
+### The easy way — the admin tool
 
-1. Upload a document to **Google Drive**
-2. Right-click it → **Share**
-3. Under "General access" → change to **"Anyone with the link"** → **Viewer**
-4. Click **Copy link**
-5. Open `src/config.json` in TextEdit
-6. Find the person and the document you want to link
-7. Replace `PASTE_LINK_HERE` with the link you copied
+This is how you'll do almost everything, day to day:
 
-Example:
-```
-Before: "url": "PASTE_LINK_HERE"
-After:  "url": "https://drive.google.com/file/d/1AbCdEfGh/view"
+```bash
+cd ~/Documents/family-portal
+./admin.sh
 ```
 
-8. Save the file (⌘S)
-9. Run `./build.sh` again in Terminal
-10. Push to GitHub (Step 8, skip the `git init` and `git remote add` lines this time):
-    ```bash
-    cd ~/Documents/claude_personal/family-portal
-    git add dist/index.html
-    git commit -m "Add document links"
-    git push
-    ```
+This prints a link and opens it in your browser automatically. Keep the
+Terminal window open — it's part of the tool, not just a launcher.
 
-### How to add a person's photo
+- **Tabs at the top** — one per group (family or trip)
+- **"+ Add member/category"** — add a new section within that group
+- **Rename / Delete** on a section — exactly what it says
+- **"+ Add item to ..."** — expand this under any section to:
+  - **Choose File…** or drag a file onto the dashed box — uploads and
+    encrypts a document (any format: PDF, image, CSV, whatever)
+  - **Add link** — for a booking confirmation or any external URL
+  - **Add YouTube** — paste a video URL; it fetches and encrypts the
+    thumbnail so it can preview on the site without ever calling Google
+  - Fill in **Title** and **Icon** first, and optionally a short
+    **description** (shown as two lines under the title on the site)
+- Every uploaded file has its own **Replace** button — use this for things
+  like a renewed health insurance PDF; the old one is deleted, the new one
+  takes its place, same position in the list
+- **+ New group** (top-right) — for something entirely new (like a future
+  "Kerala Trip 2027"). Choose people-layout or category-layout, and a theme.
 
-1. Get a photo of the person (JPG or PNG)
-2. Rename it to something simple like `dad.jpg` or `mum.png`
-3. Copy it into: `Documents/claude_personal/family-portal/src/photos/`
-4. Open `src/config.json`
-5. Find the person and change their `"photo"` line:
-   ```
-   Before: "photo": null,
-   After:  "photo": "dad.jpg",
-   ```
-6. Save, run `./build.sh`, and push (same steps as above)
+None of this needs a password — files get their own random encryption key
+automatically. A group's password is only needed for the last step:
 
-The build script automatically converts your photo to a format that gets embedded into the encrypted file — so photos are protected behind the password too.
+### Publish
 
-### How to change a family member's name
+Click **"🚀 Publish to zerostress.in"** at the bottom of the admin page, then
+switch to the Terminal window running `./admin.sh` — that's where each
+group's password prompt will appear (same as running `./build.sh` directly).
+Type each one, and it builds, commits, and pushes automatically.
 
-1. Open `src/config.json`
-2. Find `"name": "Rohan Mehta"` (or whichever name you want to change)
-3. Replace it with the real name
-4. Save, run `./build.sh`, push
+### Advanced — editing config.json by hand
 
-### How to change a family group name (e.g. "Primary" → "Sharma Family")
-
-1. Open `src/config.json`
-2. Find `"familyName": "Primary"`
-3. Change it to `"familyName": "Sharma Family"`
-4. Also update the welcome screen label if you want — it's the same value
-5. Save, run `./build.sh`, push
-6. The welcome screen button will now say "Sharma Family" instead of "Primary Family"
-
-### How to add a new document type (e.g. "Voter ID")
-
-In `src/config.json`, find a person's documents list and add a new entry:
-```json
-{ "name": "Voter ID", "icon": "🗳️", "url": "PASTE_LINK_HERE" }
-```
-Copy that line for every family member you want to add it to.
+A few things aren't exposed in the admin tool yet: renaming a group's
+`label`, or changing its `theme`. For these, edit `src/config.json` directly
+(see Step 4), then run either `./build.sh` or `./admin.sh` → Publish to apply
+the change.
 
 ### How to change a password
 
-Run `./build.sh` — it always asks for new passwords. Just enter different ones.
-The old password immediately stops working once you push the new build.
+Click Publish (or run `./build.sh`) — each group's password prompt lets you
+type a **new** password right there; you don't need the old one. The old
+password stops working the moment the new build is pushed.
 
 ---
 
 ## PART 8 — THE EVERYDAY UPDATE COMMAND
 
-Once everything is set up, every future update is just 3 commands in Terminal:
+Adding or replacing documents:
 
 ```bash
-cd ~/Documents/claude_personal/family-portal
+cd ~/Documents/family-portal
+./admin.sh
+```
+…then use the browser page it opens, and click **Publish** when ready.
+
+If you've only hand-edited `config.json` and want to skip the admin UI:
+
+```bash
+cd ~/Documents/family-portal
 ./build.sh
-git add dist/index.html && git commit -m "Update portal" && git push
+git add dist && git commit -m "Update portal" && git push
 ```
 
-That's it. Changes go live in ~60 seconds.
+Either way, changes go live in ~60 seconds.
 
 ---
 
@@ -348,13 +379,14 @@ That's it. Changes go live in ~60 seconds.
 
 | What someone could do              | What they'd see                          |
 |------------------------------------|------------------------------------------|
-| Visit zerostress.in                | Beautiful welcome page with two buttons  |
-| Enter wrong password               | "Incorrect password" — nothing revealed  |
+| Visit zerostress.in                | Welcome page with one card per group     |
+| Enter wrong password               | "Incorrect password" — nothing revealed, 3 tries then a 30s lockout |
 | Try to guess sub-page URLs         | No sub-pages exist — single HTML file    |
-| View the GitHub source code        | AES-256 encrypted gibberish              |
+| View the GitHub source code        | AES-256 encrypted gibberish — catalog *and* every document individually |
+| Download a file from dist/files/   | Unreadable ciphertext — its own random key lives only inside the encrypted catalog |
 | Search Google for the site         | Not indexed — invisible to search engines |
 | Try to brute-force the password    | PBKDF2 with 600,000 iterations — very slow |
-| Find a Google Drive link           | Impossible without unlocking the portal  |
+| Sit idle for 5 minutes             | Automatically logged out                 |
 
 ---
 
@@ -362,13 +394,19 @@ That's it. Changes go live in ~60 seconds.
 
 ```bash
 # Go to your project folder
-cd ~/Documents/claude_personal/family-portal
+cd ~/Documents/family-portal
 
-# Build (encrypt) the site
+# Day-to-day: add/replace documents, add sections/groups, then Publish
+./admin.sh
+
+# Build (encrypt) the site by hand, e.g. after editing config.json directly
 ./build.sh
 
-# Push to GitHub (after building)
-git add dist/index.html && git commit -m "Update portal" && git push
+# Push to GitHub (after building by hand — admin.sh's Publish does this for you)
+git add dist && git commit -m "Update portal" && git push
+
+# One-time: convert an old-style config.json to the groups[] format
+node migrate-config.js
 
 # Check git status
 git status
@@ -388,7 +426,7 @@ git status
 → Run: `chmod +x build.sh` then try again.
 
 **"src/config.json not found"**
-→ You're not in the right folder. Run: `cd ~/Documents/claude_personal/family-portal` first.
+→ You're not in the right folder. Run: `cd ~/Documents/family-portal` first.
 
 **Password prompt doesn't show characters**
 → This is normal — it's intentional so no one sees your password over your shoulder.
@@ -401,3 +439,20 @@ git status
 
 **HTTPS padlock not showing**
 → Wait up to 24 hours after the DNS change. GitHub provisions HTTPS automatically.
+
+**"refusing to allow a Personal Access Token to create or update workflow ... without `workflow` scope"**
+→ Your token is missing a permission. Go to github.com/settings/tokens, open
+the token, add **Workflows: Read and write**, save, and push again.
+
+**"remote: Invalid username or token. Password authentication is not supported"**
+→ Your token expired, was revoked, or was never set. Create a new one
+(see Step 8's note) and use it as the password on your next `git push`.
+
+**A file won't open on the live site, but works when I double-click index.html locally**
+→ Documents load over the network now, which doesn't work from a
+`file://` link. Always test locally with `python3 -m http.server` (Step 7)
+— this isn't a sign anything is broken.
+
+**admin.sh says "port already in use" or the browser tab looks stuck**
+→ Another copy is probably still running from before. Find the old
+Terminal window and press Ctrl+C, or close it, then run `./admin.sh` again.
