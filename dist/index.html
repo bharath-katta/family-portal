@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
   <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' blob: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-src blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none';" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#FCF9EA" />
@@ -17,14 +18,9 @@
       touch-action: manipulation;
     }
     :root {
-      /*
-       * Palette 1 — #F2EAE0 · #B4D3D9 · #BDA6CE · #9B8EC7
-       * Palette 2 — #FCF9EA · #BADFDB · #FFA4A4 · #FFBDBD
-       */
-
       /* Backgrounds */
-      --bg:           #FCF9EA;   /* P2 ivory cream   */
-      --bg-alt:       #F2EAE0;   /* P1 warm linen    */
+      --bg:           #FCF9EA;
+      --bg-alt:       #F2EAE0;
 
       /* Surfaces */
       --surface:      #FFFFFF;
@@ -42,26 +38,6 @@
       --text-2:       #7B748E;
       --text-3:       #B4AECB;
 
-      /* Primary family — dusty blue/violet from Palette 1 */
-      --p-light:      #B4D3D9;   /* exact P1               */
-      --p-bg:         #EDF5F7;   /* light tint of #B4D3D9  */
-      --p-bg2:        #D5E9EE;   /* richer tint            */
-      --p-border:     #B4D3D9;   /* exact P1               */
-      --p-accent:     #3A7880;   /* #B4D3D9 darkened ~50%  */
-      --p-btn:        #3A7880;   /* 4.6:1 on #FCF9EA ✓     */
-      --p-btn-hover:  #2A6870;
-      --p-text:       #1A4850;
-
-      /* Secondary family — coral/blush from Palette 2 */
-      --s-light:      #FFA4A4;   /* exact P2               */
-      --s-bg:         #FFF0F0;   /* light tint of #FFA4A4  */
-      --s-bg2:        #FFE2E2;   /* richer tint/FFBDBD     */
-      --s-border:     #FFBDBD;   /* exact P2               */
-      --s-accent:     #B85050;   /* #FFA4A4 darkened ~50%  */
-      --s-btn:        #B85050;   /* 4.6:1 on #FCF9EA ✓     */
-      --s-btn-hover:  #A04040;
-      --s-text:       #7A2020;
-
       /* Radius */
       --r-xl:   24px;
       --r-lg:   18px;
@@ -73,6 +49,26 @@
       --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
               "Helvetica Neue", Arial, sans-serif;
       --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── GENERIC THEME RAMPS — add a group, add one block here ── */
+    [data-theme="blue"] {
+      --g-light: #B4D3D9; --g-bg: #EDF5F7; --g-bg2: #D5E9EE;
+      --g-border: #B4D3D9; --g-accent: #3A7880;
+      --g-btn: #3A7880; --g-btn-hover: #2A6870; --g-text: #1A4850;
+      --g-hue: 190;
+    }
+    [data-theme="coral"] {
+      --g-light: #FFA4A4; --g-bg: #FFF0F0; --g-bg2: #FFE2E2;
+      --g-border: #FFBDBD; --g-accent: #B85050;
+      --g-btn: #B85050; --g-btn-hover: #A04040; --g-text: #7A2020;
+      --g-hue: 6;
+    }
+    [data-theme="teal"] {
+      --g-light: #8FCFC2; --g-bg: #EAF7F4; --g-bg2: #CFEFE8;
+      --g-border: #8FCFC2; --g-accent: #227A68;
+      --g-btn: #227A68; --g-btn-hover: #1A5F52; --g-text: #0F4038;
+      --g-hue: 165;
     }
 
     html {
@@ -91,38 +87,19 @@
       position: relative;
     }
 
-    /* ── BACKGROUND BLOBS (light pastel, no dark orbs) ── */
-    .bg-orbs {
-      position: fixed; inset: 0;
-      pointer-events: none; z-index: 0; overflow: hidden;
-    }
-    .orb {
-      position: absolute; border-radius: 50%;
-      filter: blur(110px);
-      animation: drift 26s ease-in-out infinite;
-    }
-    .orb-1 {
-      width: 640px; height: 640px; opacity: 0.38;
-      background: radial-gradient(circle, #B4D3D9 0%, transparent 70%);
-      top: -220px; left: -160px; animation-delay: 0s;
-    }
-    .orb-2 {
-      width: 500px; height: 500px; opacity: 0.30;
-      background: radial-gradient(circle, #FFA4A4 0%, transparent 70%);
-      top: -120px; right: -120px; animation-delay: -10s;
-    }
-    .orb-3 {
-      width: 420px; height: 420px; opacity: 0.22;
-      background: radial-gradient(circle, #BDA6CE 0%, transparent 70%);
-      bottom: -120px; left: 32%; animation-delay: -19s;
-    }
+    /* ── BACKGROUND BLOBS ── */
+    .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(110px); animation: drift 26s ease-in-out infinite; }
+    .orb-1 { width: 640px; height: 640px; opacity: 0.38; background: radial-gradient(circle, #B4D3D9 0%, transparent 70%); top: -220px; left: -160px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; opacity: 0.30; background: radial-gradient(circle, #FFA4A4 0%, transparent 70%); top: -120px; right: -120px; animation-delay: -10s; }
+    .orb-3 { width: 420px; height: 420px; opacity: 0.22; background: radial-gradient(circle, #8FCFC2 0%, transparent 70%); bottom: -120px; left: 32%; animation-delay: -19s; }
     @keyframes drift {
       0%,100% { transform: translate(0,0) scale(1); }
       33%      { transform: translate(32px,-28px) scale(1.06); }
       66%      { transform: translate(-22px,20px) scale(0.94); }
     }
     @media (prefers-reduced-motion: reduce) {
-      .orb { animation: none; }
+      .orb, .hero-bg-layer { animation: none !important; transition: none !important; }
     }
 
     /* ── SCREENS ── */
@@ -137,15 +114,9 @@
       overflow-y: auto; overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
     }
-    .screen.active {
-      opacity: 1; transform: scale(1) translateY(0);
-      pointer-events: all;
-    }
-    #screen-family, #screen-person {
-      justify-content: flex-start; padding: 0;
-    }
+    .screen.active { opacity: 1; transform: scale(1) translateY(0); pointer-events: all; }
+    #screen-family, #screen-person { justify-content: flex-start; padding: 0; }
 
-    /* ── SHARED CARD ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -156,86 +127,57 @@
     /* ══════════════════════════════════════
        SCREEN 1 — WELCOME
     ══════════════════════════════════════ */
-    #screen-welcome { gap: 52px; }
-
+    #screen-welcome { gap: 48px; }
     .welcome-head { text-align: center; }
-
     .hello-word {
       font-family: var(--sans);
-      font-size: clamp(72px, 15vw, 118px);
-      font-weight: 700;
-      font-style: italic;
-      letter-spacing: -0.035em;
-      line-height: 1;
-      color: var(--text);
-      margin-bottom: 12px;
+      font-size: clamp(64px, 14vw, 108px);
+      font-weight: 700; font-style: italic;
+      letter-spacing: -0.035em; line-height: 1;
+      color: var(--text); margin-bottom: 12px;
     }
-
     .portal-label {
-      font-size: clamp(11px, 2vw, 14px);
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--text-2);
+      font-size: clamp(11px, 2vw, 14px); font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-2);
     }
 
-    .family-cards {
-      display: flex; gap: 16px;
-      flex-wrap: wrap; justify-content: center;
-      width: 100%; max-width: 600px;
-    }
+    .group-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 760px; }
 
-    .family-card {
+    .group-card {
       flex: 1; min-width: 200px; max-width: 270px;
-      padding: 36px 24px;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 14px;
-      cursor: pointer; border: none;
-      text-align: center; position: relative; overflow: hidden;
-      border-radius: var(--r-xl);
+      padding: 0; border: none; cursor: pointer;
+      border-radius: var(--r-xl); overflow: hidden;
+      position: relative; text-align: center;
+      border: 1.5px solid var(--g-border);
       transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+      box-shadow: var(--shadow-sm);
     }
-    .family-card:hover {
-      transform: translateY(-7px) scale(1.02);
-      box-shadow: var(--shadow-lg);
-    }
-    .family-card:active  { transform: scale(0.975); }
-    .family-card:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+    .group-card:hover { transform: translateY(-7px) scale(1.02); box-shadow: var(--shadow-lg); }
+    .group-card:active { transform: scale(0.975); }
+    .group-card:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 
-    /* Teal card — Primary */
-    .family-card.primary {
-      background: linear-gradient(150deg, var(--p-bg) 0%, var(--p-bg2) 100%);
-      border: 1.5px solid var(--p-border);
+    .gc-hero {
+      height: 108px; width: 100%;
+      background:
+        radial-gradient(120% 140% at 20% 0%, hsla(var(--g-hue),75%,88%,0.9), transparent 60%),
+        linear-gradient(150deg, var(--g-bg) 0%, var(--g-bg2) 100%);
     }
-    .family-card.primary .fc-name { color: var(--p-text); }
-
-    /* Coral card — Secondary */
-    .family-card.secondary {
-      background: linear-gradient(150deg, var(--s-bg) 0%, var(--s-bg2) 100%);
-      border: 1.5px solid var(--s-border);
+    .gc-body { padding: 18px 20px 26px; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: -34px; }
+    .gc-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--surface); box-shadow: var(--shadow-md);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--g-accent); font-size: 26px;
     }
-    .family-card.secondary .fc-name { color: var(--s-text); }
-
-    .fc-emoji { font-size: 52px; line-height: 1; }
-    .fc-name  { font-size: 20px; font-weight: 700; }
-    .fc-lock  {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; font-weight: 500; color: var(--text-2);
-    }
-    .lock-pip { width: 6px; height: 6px; border-radius: 50%; }
-    .family-card.primary   .lock-pip { background: var(--p-btn); }
-    .family-card.secondary .lock-pip { background: var(--s-btn); }
+    .gc-icon svg { width: 26px; height: 26px; }
+    .gc-name { font-size: 18px; font-weight: 700; color: var(--g-text); }
+    .gc-lock { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; color: var(--text-2); }
+    .lock-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--g-btn); }
 
     /* ══════════════════════════════════════
        SCREEN 2 — PASSWORD
     ══════════════════════════════════════ */
-    .pw-card {
-      width: 100%; max-width: 390px;
-      padding: 36px 28px;
-      display: flex; flex-direction: column;
-      align-items: stretch; gap: 16px;
-    }
-
+    .pw-card { width: 100%; max-width: 390px; padding: 36px 28px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
     .pw-back {
       align-self: flex-start; background: none; border: none;
       color: var(--text-2); font-family: var(--sans); font-size: 14px;
@@ -245,216 +187,153 @@
     .pw-back:hover { color: var(--text); }
     .pw-back svg { width: 15px; height: 15px; }
 
-    .pw-emoji { text-align: center; font-size: 48px; line-height: 1; }
-    .pw-title {
-      font-size: 22px; font-weight: 700;
-      text-align: center; color: var(--text);
-    }
+    .pw-icon { display: flex; align-items: center; justify-content: center; color: var(--g-accent); }
+    .pw-icon svg { width: 44px; height: 44px; }
+    .pw-title { font-size: 22px; font-weight: 700; text-align: center; color: var(--text); }
     .pw-hint  { font-size: 13px; color: var(--text-2); text-align: center; }
 
     .pw-input {
-      background: var(--surface-alt);
-      border: 1.5px solid var(--border-md);
-      border-radius: var(--r-md);
-      padding: 15px 18px;
-      font-size: 18px; font-family: var(--sans);
-      color: var(--text); text-align: center;
-      letter-spacing: 0.18em; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      width: 100%;
+      background: var(--surface-alt); border: 1.5px solid var(--border-md);
+      border-radius: var(--r-md); padding: 15px 18px;
+      font-size: 18px; font-family: var(--sans); color: var(--text);
+      text-align: center; letter-spacing: 0.18em; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
     }
-    .pw-input::placeholder {
-      letter-spacing: 0; font-size: 13px; color: var(--text-3);
-    }
-    .pw-card.primary   .pw-input:focus {
-      border-color: var(--p-btn);
-      box-shadow: 0 0 0 3px rgba(75,168,181,0.18);
-    }
-    .pw-card.secondary .pw-input:focus {
-      border-color: var(--s-btn);
-      box-shadow: 0 0 0 3px rgba(224,120,120,0.18);
-    }
-
+    .pw-input::placeholder { letter-spacing: 0; font-size: 13px; color: var(--text-3); }
+    .pw-card .pw-input:focus { border-color: var(--g-btn); box-shadow: 0 0 0 3px hsla(var(--g-hue),50%,55%,0.18); }
     .pw-input.shake { animation: shake 0.45s ease; }
     @keyframes shake {
       0%,100% { transform: translateX(0); }
-      22%      { transform: translateX(-10px); }
-      44%      { transform: translateX(10px); }
-      66%      { transform: translateX(-6px); }
-      88%      { transform: translateX(5px); }
+      22% { transform: translateX(-10px); } 44% { transform: translateX(10px); }
+      66% { transform: translateX(-6px); }  88% { transform: translateX(5px); }
     }
 
     .btn-unlock {
-      padding: 15px; border: none;
-      border-radius: var(--r-md);
-      font-family: var(--sans); font-size: 15px;
-      font-weight: 700; cursor: pointer; color: #FFFFFF;
-      display: flex; align-items: center;
-      justify-content: center; gap: 8px;
-      letter-spacing: 0.01em;
+      padding: 15px; border: none; border-radius: var(--r-md);
+      font-family: var(--sans); font-size: 15px; font-weight: 700;
+      cursor: pointer; color: #FFFFFF;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      letter-spacing: 0.01em; min-height: 52px;
+      background: var(--g-btn);
       transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      min-height: 52px;
     }
-    .btn-unlock:hover  { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-unlock:not(:disabled):hover { background: var(--g-btn-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
     .btn-unlock:active { transform: scale(0.98); }
     .btn-unlock:disabled { opacity: 0.50; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .pw-card.primary   .btn-unlock            { background: var(--p-btn); }
-    .pw-card.primary   .btn-unlock:not(:disabled):hover { background: var(--p-btn-hover); }
-    .pw-card.secondary .btn-unlock            { background: var(--s-btn); }
-    .pw-card.secondary .btn-unlock:not(:disabled):hover { background: var(--s-btn-hover); }
-
-    .pw-error {
-      font-size: 13px; color: #B03020; text-align: center;
-      min-height: 16px; opacity: 0; transition: opacity 0.2s;
-    }
+    .pw-error { font-size: 13px; color: #B03020; text-align: center; min-height: 16px; opacity: 0; transition: opacity 0.2s; }
     .pw-error.show { opacity: 1; }
-
     .pw-lockout {
-      font-size: 13px; color: #8B4A20;
-      background: #FFF4EE; border: 1px solid #F0C8A8;
-      border-radius: var(--r-sm);
-      padding: 10px 14px; text-align: center;
-      display: none; line-height: 1.5;
+      font-size: 13px; color: #8B4A20; background: #FFF4EE; border: 1px solid #F0C8A8;
+      border-radius: var(--r-sm); padding: 10px 14px; text-align: center; display: none; line-height: 1.5;
     }
     .pw-lockout.show { display: block; }
 
     .spinner {
       width: 18px; height: 18px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: #FFFFFF;
+      border: 2px solid rgba(255,255,255,0.35); border-top-color: #FFFFFF;
       animation: spin 0.6s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ══════════════════════════════════════
-       SCREEN 3 — FAMILY MEMBERS
+       SCREEN 3 & 4 — SHARED PAGE / HERO
     ══════════════════════════════════════ */
-    .page-inner {
-      width: 100%; max-width: 580px;
-      margin: 0 auto;
-      padding: 20px 16px 48px;
-      display: flex; flex-direction: column; gap: 14px;
+    .page-inner { width: 100%; max-width: 640px; margin: 0 auto; padding: 0 0 48px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+
+    .hero-bg {
+      position: absolute; top: 0; left: 0; right: 0; height: 176px;
+      overflow: hidden; border-radius: 0 0 var(--r-xl) var(--r-xl); z-index: 0;
+      pointer-events: none;
     }
+    .hero-bg-layer {
+      position: absolute; top: -30px; left: 0; right: 0; height: 240px;
+      background:
+        radial-gradient(90% 120% at 15% 10%, hsla(var(--g-hue),75%,85%,0.85), transparent 60%),
+        radial-gradient(70% 100% at 85% 90%, hsla(calc(var(--g-hue) + 35),70%,82%,0.6), transparent 65%),
+        linear-gradient(160deg, var(--g-bg) 0%, var(--g-bg2) 100%);
+      will-change: transform;
+      transition: transform 0.05s linear;
+    }
+
+    .page-content { position: relative; z-index: 1; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 14px; }
 
     .top-bar {
       display: flex; align-items: center; gap: 10px;
       padding: 12px 16px;
-      background: rgba(255,255,255,0.86);
+      background: rgba(255,255,255,0.80);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      flex-shrink: 0; position: sticky; top: 0; z-index: 5;
+      flex-shrink: 0; position: sticky; top: 16px; z-index: 5;
       backdrop-filter: blur(16px) saturate(150%);
       -webkit-backdrop-filter: blur(16px) saturate(150%);
       box-shadow: var(--shadow-sm);
+      margin: 16px 16px 0;
     }
-
-    .tb-family-dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    }
-    .primary-ctx   .tb-family-dot { background: var(--p-light); }
-    .secondary-ctx .tb-family-dot { background: var(--s-light); }
-
+    .tb-family-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--g-light); flex-shrink: 0; }
     .tb-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--text); }
-
-    .tb-timer {
-      font-size: 12px; color: var(--text-2);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.03em; font-weight: 500;
-    }
-    .tb-timer.warn { color: #C07020; }
-    .tb-timer.crit { color: #C02820; }
-
+    .tb-timer { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; letter-spacing: 0.03em; font-weight: 500; }
+    .tb-timer.warn { color: #C07020; } .tb-timer.crit { color: #C02820; }
     .btn-lock {
-      background: var(--surface-alt);
-      border: 1px solid var(--border-md);
-      border-radius: var(--r-sm);
-      color: var(--text-2); font-family: var(--sans);
-      font-size: 12px; font-weight: 600;
-      padding: 6px 12px; cursor: pointer;
-      display: flex; align-items: center; gap: 4px;
-      min-height: 32px;
-      transition: background 0.2s, color 0.2s;
+      background: var(--surface-alt); border: 1px solid var(--border-md); border-radius: var(--r-sm);
+      color: var(--text-2); font-family: var(--sans); font-size: 12px; font-weight: 600;
+      padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+      min-height: 32px; transition: background 0.2s, color 0.2s;
     }
     .btn-lock:hover { background: var(--bg-alt); color: var(--text); }
 
-    .section-eyebrow {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--text-3); padding: 0 4px;
-    }
+    .hero-title-block { padding: 22px 4px 4px; }
+    .h-title { font-size: clamp(24px, 5.5vw, 34px); font-weight: 800; color: var(--text); line-height: 1.1; }
+    .h-sub   { font-size: 13px; color: var(--text-2); margin-top: 5px; }
+
+    .section-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); padding: 0 4px; }
 
     .members-list { display: flex; flex-direction: column; gap: 10px; }
 
     .member-btn {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 18px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg); cursor: pointer;
-      color: var(--text); width: 100%; text-align: left;
+      display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+      cursor: pointer; color: var(--text); width: 100%; text-align: left;
       font-family: var(--sans); position: relative; overflow: hidden;
       box-shadow: var(--shadow-sm);
       transition: transform 0.22s var(--ease), border-color 0.22s, box-shadow 0.22s;
     }
     .member-btn::before {
-      content: ''; position: absolute;
-      left: 0; top: 0; bottom: 0; width: 3px;
-      border-radius: 3px 0 0 3px;
-      opacity: 0; transition: opacity 0.22s;
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      border-radius: 3px 0 0 3px; background: var(--g-btn); opacity: 0; transition: opacity 0.22s;
     }
-    .primary-ctx   .member-btn::before { background: var(--p-btn); }
-    .secondary-ctx .member-btn::before { background: var(--s-btn); }
     .member-btn:hover::before { opacity: 1; }
-    .member-btn:hover {
-      transform: translateX(4px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--border-md);
-    }
+    .member-btn:hover { transform: translateX(4px); box-shadow: var(--shadow-md); border-color: var(--border-md); }
     .member-btn:active { transform: scale(0.99); }
     .member-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
     .avatar {
       flex-shrink: 0; border-radius: 50%; overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-      position: relative; z-index: 1;
+      font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.12); position: relative; z-index: 1;
     }
     .avatar img { width: 100%; height: 100%; object-fit: cover; }
     .avatar.lg { width: 48px; height: 48px; font-size: 15px; }
     .avatar.xl { width: 58px; height: 58px; font-size: 18px; }
+    .avatar svg { width: 22px; height: 22px; }
+    .avatar.xl svg { width: 26px; height: 26px; }
 
     .member-info { flex: 1; }
     .member-name { font-size: 16px; font-weight: 700; line-height: 1.2; }
     .member-sub  { font-size: 12px; color: var(--text-2); margin-top: 3px; }
 
-    .chevron {
-      font-size: 20px; color: var(--text-3);
-      font-weight: 300; line-height: 1;
-      transition: transform 0.2s, color 0.2s;
-    }
-    .primary-ctx   .member-btn:hover .chevron { color: var(--p-btn); transform: translateX(3px); }
-    .secondary-ctx .member-btn:hover .chevron { color: var(--s-btn); transform: translateX(3px); }
+    .chevron { font-size: 20px; color: var(--text-3); font-weight: 300; line-height: 1; transition: transform 0.2s, color 0.2s; }
+    .member-btn:hover .chevron { color: var(--g-btn); transform: translateX(3px); }
 
     /* ══════════════════════════════════════
-       SCREEN 4 — PERSON DOCUMENTS
+       SCREEN 4 — ITEMS GRID
     ══════════════════════════════════════ */
-    .person-header {
-      display: flex; align-items: center; gap: 14px;
-      padding: 20px 18px; border-radius: var(--r-xl);
-    }
-
+    .person-header { display: flex; align-items: center; gap: 14px; padding: 20px 18px; border-radius: var(--r-xl); }
     .btn-back {
-      background: var(--surface-alt);
-      border: 1px solid var(--border-md);
-      border-radius: var(--r-sm);
-      color: var(--text-2); font-family: var(--sans);
-      font-size: 13px; font-weight: 500;
-      padding: 8px 14px; cursor: pointer;
-      display: flex; align-items: center; gap: 4px;
-      min-height: 36px; flex-shrink: 0;
-      transition: background 0.2s, color 0.2s;
+      background: var(--surface-alt); border: 1px solid var(--border-md); border-radius: var(--r-sm);
+      color: var(--text-2); font-family: var(--sans); font-size: 13px; font-weight: 500;
+      padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+      min-height: 36px; flex-shrink: 0; transition: background 0.2s, color 0.2s;
     }
     .btn-back:hover { background: var(--bg-alt); color: var(--text); }
     .btn-back svg { width: 14px; height: 14px; }
@@ -463,331 +342,266 @@
     .person-name { font-size: 22px; font-weight: 700; }
     .person-sub  { font-size: 12px; color: var(--text-2); margin-top: 3px; }
 
-    .docs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+    .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
     .doc-btn {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 10px; padding: 22px 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg); cursor: pointer;
-      color: var(--text); text-decoration: none;
-      text-align: center; font-family: var(--sans);
-      min-height: 115px;
-      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; padding: 20px 14px 16px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+      cursor: pointer; color: var(--text); text-decoration: none; text-align: center;
+      font-family: var(--sans); min-height: 128px; box-shadow: var(--shadow-sm);
       transition: transform 0.22s var(--ease), border-color 0.22s, box-shadow 0.22s;
+      position: relative; overflow: hidden;
     }
-    .doc-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-      text-decoration: none;
-    }
-    .primary-ctx   .doc-btn:hover { border-color: var(--p-light); }
-    .secondary-ctx .doc-btn:hover { border-color: var(--s-light); }
+    .doc-btn:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); text-decoration: none; border-color: var(--g-light); }
     .doc-btn:active { transform: scale(0.97); }
     .doc-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+    .doc-btn.inactive { opacity: 0.40; cursor: default; pointer-events: none; }
+    .doc-btn.err { animation: shake 0.4s ease; }
 
-    .doc-btn.inactive {
-      opacity: 0.38; cursor: default; pointer-events: none;
+    .doc-thumb { width: 100%; height: 64px; border-radius: var(--r-sm); object-fit: cover; margin-bottom: 2px; background: var(--surface-alt); }
+    .doc-icon { width: 26px; height: 26px; color: var(--g-accent); }
+    .doc-icon.emoji { font-size: 26px; line-height: 1; }
+    .doc-title { font-size: 13.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+    .doc-desc {
+      font-size: 11.5px; color: var(--text-2); line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-
-    .doc-icon { font-size: 28px; line-height: 1; }
-    .doc-name { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text); }
-    .doc-na   { font-size: 10px; color: var(--text-3); }
+    .doc-na { font-size: 10px; color: var(--text-3); }
+    .doc-btn .spinner-dark { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--g-accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 500px) {
-      .family-cards { flex-direction: column; align-items: center; }
-      .family-card  { max-width: 340px; width: 100%; }
-      .hello-word   { font-size: 72px; }
+      .group-cards { flex-direction: column; align-items: center; }
+      .group-card  { max-width: 340px; width: 100%; }
+      .hello-word  { font-size: 60px; }
     }
-    @media (max-width: 340px) {
-      .docs-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 340px) { .docs-grid { grid-template-columns: 1fr; } }
     @media (min-width: 700px) {
-      .page-inner { padding: 28px 24px 60px; gap: 18px; }
-      .docs-grid  { grid-template-columns: repeat(3, 1fr); }
+      .page-content { padding: 20px 24px 0; gap: 18px; }
+      .docs-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
 <body>
 
-<!-- Ambient pastel blobs -->
 <div class="bg-orbs" aria-hidden="true">
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 1 — WELCOME
-═══════════════════════════════════ -->
+<!-- SCREEN 1 — WELCOME -->
 <div id="screen-welcome" class="screen active" role="main" aria-label="Welcome">
   <div class="welcome-head">
     <div class="hello-word">Hello.</div>
     <div class="portal-label">Family Portal</div>
   </div>
-  <div class="family-cards" role="list">
-    <button class="family-card primary" id="btn-primary"
-            onclick="selectFamily('primary')"
-            role="listitem" aria-label="Primary family — enter password">
-      <span class="fc-emoji">👨‍👩‍👧‍👦</span>
-      <span class="fc-name" id="fc-name-primary">—</span>
-      <span class="fc-lock"><span class="lock-pip"></span>Password protected</span>
-    </button>
-    <button class="family-card secondary" id="btn-secondary"
-            onclick="selectFamily('secondary')"
-            role="listitem" aria-label="Secondary family — enter password">
-      <span class="fc-emoji">👨‍👩‍👦</span>
-      <span class="fc-name" id="fc-name-secondary">—</span>
-      <span class="fc-lock"><span class="lock-pip"></span>Password protected</span>
-    </button>
-  </div>
+  <div class="group-cards" id="group-cards" role="list"></div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 2 — PASSWORD
-═══════════════════════════════════ -->
+<!-- SCREEN 2 — PASSWORD -->
 <div id="screen-password" class="screen" role="main" aria-label="Enter password">
   <div class="pw-card card" id="pw-card">
     <button class="pw-back" onclick="goWelcome()" aria-label="Back to welcome">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
       Back
     </button>
-    <div class="pw-emoji" id="pw-emoji" aria-hidden="true">🔐</div>
-    <div class="pw-title" id="pw-title">Family</div>
-    <div class="pw-hint">Enter the family password to continue</div>
-    <input
-      type="password"
-      id="pw-input"
-      class="pw-input"
-      placeholder="Password"
-      autocomplete="current-password"
-      aria-label="Family password"
-      onkeydown="onPwKey(event)"
-    />
-    <button class="btn-unlock" id="btn-unlock" onclick="tryUnlock()">
-      Unlock
-    </button>
+    <div class="pw-icon" id="pw-icon" aria-hidden="true"></div>
+    <div class="pw-title" id="pw-title">—</div>
+    <div class="pw-hint">Enter the password to continue</div>
+    <input type="password" id="pw-input" class="pw-input" placeholder="Password" autocomplete="off" aria-label="Password" onkeydown="onPwKey(event)" />
+    <button class="btn-unlock" id="btn-unlock" onclick="tryUnlock()">Unlock</button>
     <div class="pw-lockout" id="pw-lockout" role="alert" aria-live="assertive"></div>
     <div class="pw-error"   id="pw-error"   role="alert" aria-live="polite"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 3 — FAMILY MEMBERS
-═══════════════════════════════════ -->
-<div id="screen-family" class="screen" role="main" aria-label="Family members">
+<!-- SCREEN 3 — SECTION LIST (members or categories) -->
+<div id="screen-family" class="screen" role="main" aria-label="Sections">
   <div class="page-inner" id="family-inner">
+    <div class="hero-bg"><div class="hero-bg-layer" id="hero-layer-family"></div></div>
     <div class="top-bar">
       <div class="tb-family-dot"></div>
       <span class="tb-name" id="tb-name">—</span>
       <span class="tb-timer" id="tb-timer" aria-label="Session time remaining" aria-live="polite"></span>
       <button class="btn-lock" onclick="doLock()" aria-label="Lock portal">🔒 Lock</button>
     </div>
-    <div class="section-eyebrow">Members</div>
-    <div class="members-list" id="members-list" role="list"></div>
+    <div class="page-content">
+      <div class="hero-title-block">
+        <div class="h-title" id="family-hero-title">—</div>
+        <div class="h-sub" id="family-hero-sub">—</div>
+      </div>
+      <div class="section-eyebrow" id="family-eyebrow">Members</div>
+      <div class="members-list" id="members-list" role="list"></div>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     SCREEN 4 — PERSON'S DOCUMENTS
-═══════════════════════════════════ -->
+<!-- SCREEN 4 — ITEMS -->
 <div id="screen-person" class="screen" role="main" aria-label="Documents">
   <div class="page-inner" id="person-inner">
+    <div class="hero-bg"><div class="hero-bg-layer" id="hero-layer-person"></div></div>
     <div class="top-bar">
       <div class="tb-family-dot"></div>
       <span class="tb-name" id="tb-name-person">—</span>
       <span class="tb-timer" id="tb-timer-person" aria-live="polite"></span>
       <button class="btn-lock" onclick="doLock()" aria-label="Lock portal">🔒 Lock</button>
     </div>
-    <div class="person-header card" id="person-header">
-      <button class="btn-back" onclick="goFamily()" aria-label="Back to family list">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        Back
-      </button>
-      <div class="avatar xl" id="ph-avatar" aria-hidden="true"></div>
-      <div class="person-meta">
-        <div class="person-name" id="ph-name">—</div>
-        <div class="person-sub"  id="ph-sub">—</div>
+    <div class="page-content">
+      <div class="person-header card" id="person-header">
+        <button class="btn-back" onclick="goFamily()" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Back
+        </button>
+        <div class="avatar xl" id="ph-avatar" aria-hidden="true"></div>
+        <div class="person-meta">
+          <div class="person-name" id="ph-name">—</div>
+          <div class="person-sub"  id="ph-sub">—</div>
+        </div>
       </div>
+      <div class="section-eyebrow">Documents</div>
+      <div class="docs-grid" id="docs-grid" role="list"></div>
     </div>
-    <div class="section-eyebrow">Documents</div>
-    <div class="docs-grid" id="docs-grid" role="list"></div>
   </div>
 </div>
 
 <script>
-// ── FRAMEBUSTING (clickjacking protection) ────────────────────────────────
-if (window.top !== window.self) {
-  window.top.location = window.self.location;
-}
+// ── FRAMEBUSTING ──
+if (window.top !== window.self) { window.top.location = window.self.location; }
 
-// ── ENCRYPTED CONFIG (injected by build.js) ───────────────────────────────
-const PCFG = {
-  labels: {
-    primary:   "Katta's",
-    secondary: "Jayasurya's"
-  },
-  primary: {
-    salt: "CSQ6XniIM7zOzHDia9UvSg==",
-    iv:   "8/94OXAeUUr2NsCW",
-    data: "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"
-  },
-  secondary: {
-    salt: "S1NJ80gfbE1Z6nnnRvJjZw==",
-    iv:   "XjcX+w7JlMTpRLcO",
-    data: "LRaxYGtChdIKHljdjJ40uz+cOSYbkmtx4fgLJx4GvOl0rOcKzwFd4YHIxAVauN+D2QG0imdPkiKyla+gF/ofcolham6oXrYfYGi0LWe/S924sOCjU6AJ5nwPcDhwUreQWMNBt8naIV+Hw+f/vdN3HUO3bng835c4lckH3fV1C0BmXUA8g2zFAORzqI3pw+hEpShitskFjU0mJXwQ1//P6y5OVSLRB2R7CIXyhoE3W31PdhLEpueRTLWpRtF9wrkr7hbPUUAZbFVAGofu4n6XRMiMMH/CYlnaMmCFeAphq8uVlvC1I7ihwIsV46VEISbaDUTertcXPwKI2SamTrBMtQvsJI7kH24353vfvMI0UYQgCtyEtgXhFl0phUQrYl7SBgZpsfVLEhs31plyyO9tPQ9X0PNYsP9yk7JZHwV9HKcW3DJvefCtup6OSi4RW/0V3issvgxNtpZaFfSEOPS/sDzZxbENlpiRWy/hksN4yPtUBr5k8TIVATRamganMzG40ZH2+LcuQuK6O8m86u0DKFJbXoFUabY5BNi8Jk/y+MdG+6NuOrwY/78J6e3kCCVo+C5lpbJFpWvmpsCCypzfkSYxvdyUtvVTaPyzcow8pGLyiDL0bA0axmCjjhPcKZ/K1HlB3jwjhoXcBLUO/v9sd6V993HgfHa/vEDdrjBi6vcCcWhkfiAdD2VPW79iUg3R3YQ31cfe8pNbZh56WVZdxlFfSaFBlkuLqv8IshCxw+Y+oeTxd7HdeBVRgcw+8qShSLuMpBlV56eAAC1e6CwGvOh6njo+o2+7cfVtJ3wdj/5JlsRByQIWi38tG7E7JOHfiDp8bWHSQnOzpKa7UgCII3L+7gMfut+pVGjfDo1Is1Y3o0VLPhp7HBduhKJtN2mG6WjxKFnUoDTfKK3P1PhKT92wOrmwV4lBagmnD90C0DR1Odr+f/iu99ivgiTAX4Z40g5sczyZmxPPYA6Srxxa+o3pm1IEkM8C6izKlxzHHh1e0yTDmyMc3lysvlsvjH5PCnAaRMANUCZ7RZH9zyc4o+fX1y4bBL/nq2M77mz89XNpB1qUUoqnAfL/hKMVIS1h4MYsZe748C+Q52oTlbWQpIzAQloWErYK/vg/FPg12+uhH82OqiMYW3TIHqF8EsIYpVjcEN6o/CgxCJbHUxCQubfxbaHEB3rztQa7Yst8R/cWoaqZldey3df02AN5Bv7FvYdIZNmfntkAKNuoU9V00T/CzMguHRJhk5waZB2qruR33QfYFuN33xeM974jQ7YzfR/XoVzAkTwjXLY0TtpY6eSxydKVc4rumhm21wA9mhRvgXvpgodoCByn1y3YibDKma0RT/KsP8mRLex9ajVAwqRDllVwnQIZkIjou90CX65h635AjIfA"
-  }
-};
+// ── INJECTED AT BUILD TIME ──
+const PCFG = { groups: [{"id":"primary","label":"Katta's","theme":"blue","layout":"people","salt":"NliESlrdaz4b2qq/Lyz44Q==","iv":"fwF/1mT9f0JwQbGF","data":"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"},{"id":"secondary","label":"Jayasurya's","theme":"coral","layout":"people","salt":"KtlIlGMgk1Pn0DB++29H0w==","iv":"eh9Bl1hgokh9ThyW","data":"m8hwvqR0OF3XbkSecOvJgSKxbUZpKFEKx5QhCoEoejbfSSR1y68rJ5xFhXnsfsZV0z1PdG4aGeb1IwfkVqoIRSJBc3dEtItGMiiudpcwRisE5X+23wDzt94lhYRJ1LhD+bt+ppuptXbxagnf6aWz7r5TleNekYtT4BFlHOXLVJkjELsAq9bE2CfN7mPi04KNP6nf9aiAAxf34Tnz0bjIQipPlx6Rqfh2/OHMHDIsx5t1qZ0fLX3aYZECOl7Jrbw6l7l4kG577ZN6z7fg59mU8scsW1fwL80/LaoOWaP3XbDh/b2FmaMrdC1hT0VKhndc+PPNQLgFMn9vEkJvjDHpEEEJ53TWiOHPMZwiea9VnqWUBXsAzCD9jbyd2L5HzFp2ESmeec8msCTcNqyxbeMsmFpfIiMr4pQD2QuXOj9V86DRTUPJzi+wopdQAD1ynNdqY6E/CvgL018dZlIJ4sXe05GbIvDeHO4aylPmYL2fysdCfCzvTijU1RtjKKyoZJW3PM8qdi89RPkXZMbK/Og3Jc7KpDJubP3dQzHLVCe1NUXXn3C4D5JjNuQFcPhhnXBvsdQjQbq1C0Q5/gfaNJDCf2sZZLlpUhESY+qEVqQOfJ5D8dWQ8PVXGJY8WMZd8hK2wqraERF4JD+AJjnNI4oWOA+HLRqC8ljCCVOvoKjCNaC+Jg2zKbWk3sT/eFiajBwkb3h13tCc9ODsgyjFXoP8KH/NwBK7W1vd8Xbona/Vz+Tvp3vc+eHNngQ2wMnMpgvqhHRviy9lHXkLis61sL9k8Hq4vb6fSeViu+niDhcsSLQlXtfAayvV0acN9vGQTaIa42kAKEyJfW1iQZz/RGrG/AuGVKAG3pDtYgRU+EWp88FqkregFZAWmQ+YeItv6TPEOTrkooncCtlRydXvbrvqT9ZAQoJg5zBdBLwDPnha3I6We/jtjnClCrW18uaeV714+KwpljKxKQF1oXeUhitsmo/ezK+8dPo+i2EqdlTsP0kbb2MKGLu8MyxzuZWQynSTwPbgS5IpRAUZPACkzZVL9lMcAs+xIgkK0ypwLRaERvEzcfqZMU4a7g5bkne/Tx8T4vlTzuCpkHerSlJQnH5Xh10U2ax1NYmkLsy7O3eq4Lsg28l3EjBQkHNjH/jZA7cpEtPKHkb/KmtxyrMnd61IBV+5wPCLvib/VlrG2h4oYiheWoiVVJqWmPpG6CgowjTMGgtZVYcm7xXBTfKTmQnErHMcdG8IAcoyWxlv+kikew/sRkdV5N01VKZTJFrJN4kp2RvRz9/cy+URuCOS29+zWorRUo6bDY1WwDEJwtau0+6cbBHxrfnHNz+G0HynVjyfI40V6hzuEi7Ezb0yyLNFHSWq1eiDhtXD3jNIHt/LGdWFh5wVYzfAuMhR6TBvEUuXNsj1gM1auojYCrYw7Lt7mQuqXS4sPgnZs4yU/jh+jex5+9UFh/1IeLWPwBgIaVRJOhebv6Bt+u1K5YR8fXJQVjgEZMxJ7FLkCSzUQut/mFm/0wYkkl8CX0AxpGuDKpvWK5/GjKBzncZ8qFbnT0gJFluyNP3Ipqufs0j9mP2h12GpzLDiSBxiEbDAIOY1UZCEZJbeoiVmnliXfP1/eOXyyyGsxM/ayiE6bts="},{"id":"kerala2026","label":"Kerala Trip 2026","theme":"teal","layout":"categories","salt":"WZbbfQ3RCb1dg/2SEYCiWQ==","iv":"9MGH/Y62ff2BAre0","data":"Cy9Iutrl3n6lWwXgxuqTDAInEIPSxtFERhr7lKXJ9HizzSH4Udv/ZaXtrikCxZ9X3qkfiu5VqrL+OrzHIcSAhoj1uGRsUh56jOpnaIqISdeAkvPIZE+ZRUa7+p6r7GL/VrPU3vSDRoAVqFmMUVcMht/rYR5LpuCziyikrMDIOKQPQhkDnzQPmCwEBIJtTudQ+ycHXi0U2ClNUg4f0kVpV7asRDAAvKTucr7sNag5J6t0eem+9YCW0SOUGBgr17bkZRH18qmqz3/4bS3alKDl88Clso6Rb6Yap1A4ldBrYeyrBbgMuOoWruwubFTjTW0MyCShNx/BX3wIhR9lr9ZMgpP2ajOGgEMaluazWsLZiKhT72rU6/rPGkBeicpCwi9oyY7FKYdNLTRJEY73Qtj3Kvd02ypJhQIHGPXyLkSR3WbnJ6JX9F1mEF9ifWin+xVhBLXDTMZmQ8Vnqnc+i6YTOXBEbDS7LKga86Fkjh1tcee9Cpc0Uy8GnJLAP+ann8JOATFVNXssfVEaOeGJbFEFUU9+hosdMF4pN6SMXl9rUzgau4zWMaoZX2suL6HBL7qiMBbQBwMqbVExMlU4H6w+8r2/iDyc7Mcou9ARZ5MSQMxdiKhI78vLKNi3PKw1YxZPSl2rDPjuzhSOPz7TyQ0WrADiRmPUSGy/kJw="}] };
+const ICON_SVGS = {"hotel":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 21V8l7-4 7 4v13\"/><path d=\"M3 21h18\"/><path d=\"M9 21v-6h6v6\"/><path d=\"M9 10h.01M15 10h.01\"/></svg>","flight":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2.5 19.5L21 12 2.5 4.5 4 11l9 1-9 1z\"/></svg>","itinerary":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"17\" rx=\"2\"/><path d=\"M3 9h18M8 2v4M16 2v4\"/><path d=\"M7 13h4M7 17h7\"/></svg>","menu":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 2v7a2 2 0 0 0 2 2v11M6 2a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2M6 2a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2M18 2c-2 0-3 2-3 5v3c0 1 1 2 2 2v10\"/></svg>","drink":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 3h14l-1.5 9a5.5 5.5 0 0 1-11 0z\"/><path d=\"M12 15v6M8 21h8\"/></svg>","video":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"5\" width=\"14\" height=\"14\" rx=\"2\"/><path d=\"M16 10l6-4v12l-6-4z\"/></svg>","ticket":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z\"/><path d=\"M13 6v2M13 11v2M13 16v2\"/></svg>","map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2z\"/><path d=\"M9 4v14M15 6v14\"/></svg>","calendar":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"17\" rx=\"2\"/><path d=\"M3 9h18M8 2v4M16 2v4\"/></svg>","id-card":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><circle cx=\"8\" cy=\"11\" r=\"2\"/><path d=\"M5 16c0-1.7 1.3-3 3-3s3 1.3 3 3M14 9h6M14 13h6M14 17h4\"/></svg>","passport":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"5\" y=\"2\" width=\"14\" height=\"20\" rx=\"2\"/><circle cx=\"12\" cy=\"9\" r=\"3\"/><path d=\"M8 16c0-1.7 1.8-3 4-3s4 1.3 4 3\"/></svg>","insurance":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z\"/><path d=\"M9 12l2 2 4-4\"/></svg>","licence":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"/><circle cx=\"8\" cy=\"12\" r=\"2\"/><path d=\"M14 10h5M14 14h3\"/></svg>","certificate":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"9\" r=\"6\"/><path d=\"M9 14.5L7 22l5-3 5 3-2-7.5\"/></svg>","degree":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 9l10-5 10 5-10 5-10-5z\"/><path d=\"M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5M22 9v6\"/></svg>","receipt":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 2h12v19l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5z\"/><path d=\"M9 7h6M9 11h6M9 15h4\"/></svg>","bank":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 10l9-6 9 6\"/><path d=\"M4 10v10M9 10v10M15 10v10M20 10v10M2 20h20\"/></svg>","home":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 11l9-8 9 8\"/><path d=\"M5 10v10h14V10\"/><path d=\"M9 20v-6h6v6\"/></svg>","photo":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/><circle cx=\"8\" cy=\"10\" r=\"2\"/><path d=\"M2 17l5-5 4 4 3-3 6 6\"/></svg>","generic":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 2h9l5 5v15H6z\"/><path d=\"M15 2v5h5\"/></svg>","lock":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"4\" y=\"10\" width=\"16\" height=\"11\" rx=\"2\"/><path d=\"M7 10V7a5 5 0 0 1 10 0v3\"/></svg>","download":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3v13M7 11l5 5 5-5\"/><path d=\"M4 20h16\"/></svg>","play":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M10 8l6 4-6 4z\"/></svg>","plus":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>","trash":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14\"/></svg>","edit":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z\"/></svg>"};
 
-// ── STATE ─────────────────────────────────────────────────────────────────
-let cur          = 'welcome';
-let activeFamily = null;
-let cache        = {};
-let activeMember = null;
-let sesTimer     = null;
-let sesEnd       = null;
-let tickTimer    = null;
-
-// Brute-force lockout (resets when switching family)
-let failCount    = 0;
-let lockoutUntil = 0;
-const MAX_FAILS  = 3;
+// ── STATE ──
+let cur = 'welcome';
+let activeGroupId = null;
+let cache = {};
+let activeSection = null;
+let sesTimer = null, sesEnd = null, tickTimer = null;
+let failCount = 0, lockoutUntil = 0;
+const MAX_FAILS = 3;
 const LOCKOUT_MS = 30 * 1000;
-
 const SESSION_MS = 5 * 60 * 1000;
+const objectUrls = []; // revoked on lock
 
-// ── PERSON COLOUR PALETTE ─────────────────────────────────────────────────
-// Name text colours
-// Person name text — darkened from exact palette hex, all ≥4.5:1 on #FCF9EA
-// P1: #9B8EC7→#6B5EA8  #B4D3D9→#3A7880  #BDA6CE→#6B5090
-// P2: #FFA4A4→#B85050  #BADFDB→#307878  #FFBDBD→#A05050
-const NAME_COLORS  = ['#6B5EA8','#3A7880','#B85050','#6B5090','#307878','#A05050'];
-// Avatar backgrounds — very light tints of exact palette colors
-const AVATAR_BGS   = ['#EAE6F8','#DFF0F3','#FFE8E8','#EDE7F5','#E0F2EF','#FFE8EC'];
-// Avatar text — same as name colors
-const AVATAR_FGS   = ['#6B5EA8','#3A7880','#B85050','#6B5090','#307878','#A05050'];
+const NAME_COLORS = ['#6B5EA8','#3A7880','#B85050','#6B5090','#307878','#A05050'];
+const AVATAR_BGS  = ['#EAE6F8','#DFF0F3','#FFE8E8','#EDE7F5','#E0F2EF','#FFE8EC'];
+const AVATAR_FGS  = NAME_COLORS;
 
-// ── CRYPTO HELPERS ────────────────────────────────────────────────────────
+// ── CRYPTO ──
 function b64(s) { return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
 
 async function deriveKey(pw, salt) {
-  const m = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']
-  );
-  return crypto.subtle.deriveKey(
-    { name:'PBKDF2', salt, iterations:600000, hash:'SHA-256' },
-    m, { name:'AES-GCM', length:256 }, false, ['decrypt']
-  );
+  const m = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name:'PBKDF2', salt, iterations:600000, hash:'SHA-256' }, m, { name:'AES-GCM', length:256 }, false, ['decrypt']);
 }
-
 async function decrypt(encObj, pw) {
   const key = await deriveKey(pw, b64(encObj.salt));
-  const raw = await crypto.subtle.decrypt(
-    { name:'AES-GCM', iv: b64(encObj.iv) }, key, b64(encObj.data)
-  );
+  const raw = await crypto.subtle.decrypt({ name:'AES-GCM', iv: b64(encObj.iv) }, key, b64(encObj.data));
   return JSON.parse(new TextDecoder().decode(raw));
 }
-
-// ── DOM HELPERS ───────────────────────────────────────────────────────────
-function esc(s) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(String(s)));
-  return d.innerHTML;
+// Decrypt a document blob using its own embedded raw key (not password-derived).
+async function decryptFile(item) {
+  const res = await fetch('files/' + item.blob);
+  if (!res.ok) throw new Error('blob fetch failed');
+  const ciphertext = await res.arrayBuffer();
+  const key = await crypto.subtle.importKey('raw', b64(item.key), 'AES-GCM', false, ['decrypt']);
+  const raw = await crypto.subtle.decrypt({ name:'AES-GCM', iv: b64(item.iv) }, key, ciphertext);
+  return new Blob([raw], { type: item.mime || 'application/octet-stream' });
 }
 
-function initials(name) {
-  return name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase();
-}
+// ── DOM HELPERS ──
+function esc(s) { const d = document.createElement('div'); d.appendChild(document.createTextNode(String(s))); return d.innerHTML; }
+function initials(name) { return name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase(); }
+function hashHue(str) { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h % 360; }
+function iconSvg(name) { return ICON_SVGS[name] || ICON_SVGS.generic || ''; }
 
-function avatarHtml(member, sizeClass, idx) {
+function avatarHtml(section, sizeClass, idx) {
   const bg = AVATAR_BGS[idx % AVATAR_BGS.length];
   const fg = AVATAR_FGS[idx % AVATAR_FGS.length];
-  if (member.photo) {
-    return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">`
-         + `<img src="${esc(member.photo)}" alt="${esc(member.name)}" /></div>`;
+  if (section.avatar) {
+    return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}"><img src="${esc(section.avatar)}" alt="${esc(section.label)}" /></div>`;
   }
-  return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">`
-       + `${esc(initials(member.name))}</div>`;
+  if (section.icon) {
+    return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">${iconSvg(section.icon)}</div>`;
+  }
+  return `<div class="avatar ${sizeClass}" style="background:${esc(bg)};color:${esc(fg)}">${esc(initials(section.label))}</div>`;
 }
 
-// ── FAMILY CONTEXT (colours screens per family) ───────────────────────────
-function applyFamilyCtx(fam) {
-  const add = fam === 'primary' ? 'primary-ctx' : 'secondary-ctx';
-  const rem = fam === 'primary' ? 'secondary-ctx' : 'primary-ctx';
-  ['family-inner','person-inner'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.classList.add(add); el.classList.remove(rem); }
-  });
+// ── THEME CONTEXT ──
+function applyTheme(theme) {
+  document.getElementById('family-inner').dataset.theme = theme;
+  document.getElementById('person-inner').dataset.theme = theme;
 }
 
-// ── SCREEN TRANSITIONS ────────────────────────────────────────────────────
+// ── SCREEN TRANSITIONS ──
 function showScreen(id) {
   if (id === cur) return;
   document.getElementById('screen-' + cur).classList.remove('active');
   document.getElementById('screen-' + id).classList.add('active');
   cur = id;
-  if (id === 'family' || id === 'person') {
-    document.getElementById('screen-' + id).scrollTop = 0;
-  }
+  if (id === 'family' || id === 'person') document.getElementById('screen-' + id).scrollTop = 0;
 }
 
-// ── WELCOME INIT ──────────────────────────────────────────────────────────
+// ── WELCOME ──
 (function initWelcome() {
-  document.getElementById('fc-name-primary').textContent   = PCFG.labels.primary   + ' Family';
-  document.getElementById('fc-name-secondary').textContent = PCFG.labels.secondary + ' Family';
+  const wrap = document.getElementById('group-cards');
+  PCFG.groups.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'group-card';
+    btn.dataset.theme = g.theme;
+    btn.setAttribute('role', 'listitem');
+    btn.setAttribute('aria-label', g.label + ' — enter password');
+    btn.innerHTML =
+        `<div class="gc-hero"></div>`
+      + `<div class="gc-body">`
+      +   `<div class="gc-icon">${iconSvg(g.layout === 'people' ? 'home' : 'map')}</div>`
+      +   `<div class="gc-name">${esc(g.label)}</div>`
+      +   `<div class="gc-lock"><span class="lock-pip"></span>Password protected</div>`
+      + `</div>`;
+    btn.addEventListener('click', () => selectGroup(g.id));
+    wrap.appendChild(btn);
+  });
 })();
 
-// ── FAMILY SELECTION → PASSWORD ───────────────────────────────────────────
-function selectFamily(fam) {
-  activeFamily = fam;
-  failCount    = 0;
-  lockoutUntil = 0;
+function findGroup(id) { return PCFG.groups.find(g => g.id === id); }
+
+// ── GROUP SELECT → PASSWORD ──
+function selectGroup(id) {
+  activeGroupId = id;
+  failCount = 0; lockoutUntil = 0;
+  const g = findGroup(id);
 
   const card = document.getElementById('pw-card');
-  card.classList.toggle('primary',   fam === 'primary');
-  card.classList.toggle('secondary', fam === 'secondary');
-
-  document.getElementById('pw-emoji').textContent = fam === 'primary' ? '👨‍👩‍👧‍👦' : '👨‍👩‍👦';
-  document.getElementById('pw-title').textContent = PCFG.labels[fam] + ' Family';
+  card.dataset.theme = g.theme;
+  document.getElementById('pw-icon').innerHTML = iconSvg(g.layout === 'people' ? 'home' : 'map');
+  document.getElementById('pw-title').textContent = g.label;
   document.getElementById('pw-input').value = '';
   hideLockout(); hideError();
   showScreen('password');
   setTimeout(() => document.getElementById('pw-input').focus(), 360);
 }
 
-function goWelcome() { activeFamily = null; showScreen('welcome'); }
-function onPwKey(e)  { if (e.key === 'Enter') tryUnlock(); }
+function goWelcome() { activeGroupId = null; showScreen('welcome'); }
+function onPwKey(e) { if (e.key === 'Enter') tryUnlock(); }
 
 function hideError()   { const el = document.getElementById('pw-error');   el.textContent = ''; el.classList.remove('show'); }
 function showError(m)  { const el = document.getElementById('pw-error');   el.textContent = m;  el.classList.add('show'); }
 function hideLockout() { const el = document.getElementById('pw-lockout'); el.textContent = ''; el.classList.remove('show'); }
 function showLockout(m){ const el = document.getElementById('pw-lockout'); el.textContent = m;  el.classList.add('show'); }
 
-// ── UNLOCK (with 3-attempt brute-force cooldown) ──────────────────────────
+// ── UNLOCK ──
 async function tryUnlock() {
   const now = Date.now();
   if (now < lockoutUntil) {
-    const secs = Math.ceil((lockoutUntil - now) / 1000);
-    showLockout(`Too many attempts — try again in ${secs}s.`);
+    showLockout(`Too many attempts — try again in ${Math.ceil((lockoutUntil - now) / 1000)}s.`);
     return;
   }
-
   const input = document.getElementById('pw-input');
-  const btn   = document.getElementById('btn-unlock');
-  const pw    = input.value;
+  const btn = document.getElementById('btn-unlock');
+  const pw = input.value;
   if (!pw) return;
 
   btn.disabled = true;
@@ -795,23 +609,22 @@ async function tryUnlock() {
   hideError(); hideLockout();
 
   try {
-    let familyData;
+    const g = findGroup(activeGroupId);
+    let groupData;
     try {
-      familyData = await decrypt(PCFG[activeFamily], pw);
+      groupData = await decrypt(g, pw);
     } catch {
       failCount++;
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);
       input.value = '';
-
       if (failCount >= MAX_FAILS) {
         lockoutUntil = Date.now() + LOCKOUT_MS;
-        failCount    = 0;
+        failCount = 0;
         showLockout('Too many incorrect attempts — locked for 30 seconds.');
         input.focus();
         return;
       }
-
       const left = MAX_FAILS - failCount;
       showError(`Incorrect password — ${left} attempt${left === 1 ? '' : 's'} remaining.`);
       input.focus();
@@ -819,139 +632,216 @@ async function tryUnlock() {
     }
 
     failCount = 0;
-    cache[activeFamily] = familyData;
+    cache[activeGroupId] = groupData;
     input.value = '';
-    applyFamilyCtx(activeFamily);
-    renderFamilyScreen(familyData);
+    applyTheme(g.theme);
+    renderFamilyScreen(groupData);
     startSession();
     showScreen('family');
-
   } finally {
-    btn.disabled    = false;
+    btn.disabled = false;
     btn.textContent = 'Unlock';
   }
 }
 
-// ── SESSION TIMER ─────────────────────────────────────────────────────────
+// ── SESSION TIMER ──
 const ACTIVITY_EVENTS = ['mousedown','keydown','touchstart','scroll','click'];
-
 function startSession() {
   sesEnd = Date.now() + SESSION_MS;
   clearTimeout(sesTimer); clearInterval(tickTimer);
-  sesTimer  = setTimeout(doLock, SESSION_MS);
-  tickTimer = setInterval(tick, 1000);
-  ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, bump, { passive:true }));
-}
-
-function bump() {
-  sesEnd = Date.now() + SESSION_MS;
-  clearTimeout(sesTimer);
   sesTimer = setTimeout(doLock, SESSION_MS);
+  tickTimer = setInterval(tick, 1000);
+  ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, bump, { passive: true }));
 }
-
+function bump() { sesEnd = Date.now() + SESSION_MS; clearTimeout(sesTimer); sesTimer = setTimeout(doLock, SESSION_MS); }
 function tick() {
   if (!sesEnd) return;
   const rem = Math.max(0, Math.ceil((sesEnd - Date.now()) / 1000));
-  const m   = Math.floor(rem / 60), s = rem % 60;
-  const txt = m + ':' + String(s).padStart(2,'0');
+  const m = Math.floor(rem / 60), s = rem % 60;
+  const txt = m + ':' + String(s).padStart(2, '0');
   const cls = rem <= 30 ? 'crit' : rem <= 60 ? 'warn' : '';
-  ['tb-timer','tb-timer-person'].forEach(id => {
+  ['tb-timer', 'tb-timer-person'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = txt; el.className = 'tb-timer ' + cls; }
   });
 }
+function stopSession() { clearTimeout(sesTimer); clearInterval(tickTimer); sesEnd = null; ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, bump)); }
 
-function stopSession() {
-  clearTimeout(sesTimer); clearInterval(tickTimer);
-  sesEnd = null;
-  ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, bump));
+function revokeAllObjectUrls() {
+  objectUrls.forEach(u => URL.revokeObjectURL(u));
+  objectUrls.length = 0;
 }
 
 function doLock() {
   stopSession();
-  cache = {}; activeMember = null;
+  cache = {}; activeSection = null; activeGroupId = null;
+  revokeAllObjectUrls();
   document.getElementById('members-list').innerHTML = '';
-  document.getElementById('docs-grid').innerHTML    = '';
+  document.getElementById('docs-grid').innerHTML = '';
   showScreen('welcome');
 }
 
-// ── FAMILY SCREEN ─────────────────────────────────────────────────────────
+// ── SECTION LIST SCREEN (members or categories) ──
 function renderFamilyScreen(data) {
-  const label = data.familyName + ' Family';
-  document.getElementById('tb-name').textContent        = label;
-  document.getElementById('tb-name-person').textContent = label;
+  document.getElementById('tb-name').textContent = data.label;
+  document.getElementById('tb-name-person').textContent = data.label;
+  document.getElementById('family-hero-title').textContent = data.label;
+  document.getElementById('family-eyebrow').textContent = data.layout === 'people' ? 'Members' : 'Categories';
+
+  const totalItems = data.sections.reduce((n, s) => n + s.items.length, 0);
+  document.getElementById('family-hero-sub').textContent =
+    data.layout === 'people'
+      ? `${data.sections.length} member${data.sections.length === 1 ? '' : 's'} · ${totalItems} document${totalItems === 1 ? '' : 's'}`
+      : `${data.sections.length} categor${data.sections.length === 1 ? 'y' : 'ies'} · ${totalItems} item${totalItems === 1 ? '' : 's'}`;
 
   const list = document.getElementById('members-list');
   list.innerHTML = '';
-  data.members.forEach((m, i) => {
+  data.sections.forEach((s, i) => {
     const btn = document.createElement('button');
     btn.className = 'member-btn';
-    btn.setAttribute('role','listitem');
-    btn.setAttribute('aria-label', `Open ${m.name}'s documents`);
+    btn.setAttribute('role', 'listitem');
+    btn.setAttribute('aria-label', `Open ${s.label}`);
     btn.style.transitionDelay = (i * 45) + 'ms';
     btn.innerHTML =
-        avatarHtml(m, 'lg', i)
+        avatarHtml(s, 'lg', i)
       + `<div class="member-info">`
-      +   `<div class="member-name" style="color:${NAME_COLORS[i % NAME_COLORS.length]}">${esc(m.name)}</div>`
-      +   `<div class="member-sub">${m.documents.length} document${m.documents.length === 1 ? '' : 's'}</div>`
+      +   `<div class="member-name" style="color:${NAME_COLORS[i % NAME_COLORS.length]}">${esc(s.label)}</div>`
+      +   `<div class="member-sub">${s.items.length} item${s.items.length === 1 ? '' : 's'}</div>`
       + `</div>`
       + `<div class="chevron" aria-hidden="true">›</div>`;
-    btn.addEventListener('click', () => openMember(m, i));
+    btn.addEventListener('click', () => openSection(data, s, i));
     list.appendChild(btn);
   });
 }
 
-// ── PERSON SCREEN ─────────────────────────────────────────────────────────
-function openMember(member, colorIdx) {
-  activeMember = member;
+// ── ITEMS SCREEN ──
+function openSection(groupData, section, colorIdx) {
+  activeSection = section;
   bump();
 
   const av = document.getElementById('ph-avatar');
   av.style.background = AVATAR_BGS[colorIdx % AVATAR_BGS.length];
-  av.style.color      = AVATAR_FGS[colorIdx % AVATAR_FGS.length];
-  if (member.photo) {
-    av.innerHTML = `<img src="${esc(member.photo)}" alt="${esc(member.name)}" />`;
+  av.style.color = AVATAR_FGS[colorIdx % AVATAR_FGS.length];
+  if (section.avatar) {
+    av.innerHTML = `<img src="${esc(section.avatar)}" alt="${esc(section.label)}" />`;
+  } else if (section.icon) {
+    av.innerHTML = iconSvg(section.icon);
   } else {
-    av.textContent = initials(member.name);
+    av.textContent = initials(section.label);
   }
 
-  document.getElementById('ph-name').textContent = member.name;
-  document.getElementById('ph-name').style.color  = NAME_COLORS[colorIdx % NAME_COLORS.length];
+  document.getElementById('ph-name').textContent = section.label;
+  document.getElementById('ph-name').style.color = NAME_COLORS[colorIdx % NAME_COLORS.length];
 
-  const linked = member.documents.filter(d => d.url && d.url !== 'PASTE_LINK_HERE').length;
+  const active = section.items.filter(it => it.kind !== 'pending').length;
   document.getElementById('ph-sub').textContent =
-    linked === member.documents.length
-      ? `${linked} document${linked === 1 ? '' : 's'} linked`
-      : `${linked} of ${member.documents.length} documents linked`;
+    active === section.items.length
+      ? `${active} item${active === 1 ? '' : 's'}`
+      : `${active} of ${section.items.length} items added`;
 
   const grid = document.getElementById('docs-grid');
   grid.innerHTML = '';
-  member.documents.forEach(doc => {
-    const hasUrl = doc.url && doc.url !== 'PASTE_LINK_HERE';
-    const el     = document.createElement(hasUrl ? 'a' : 'div');
-    el.className = 'doc-btn' + (hasUrl ? '' : ' inactive');
-    el.setAttribute('role','listitem');
-    if (hasUrl) {
-      el.href   = doc.url;
-      el.target = '_blank';
-      el.rel    = 'noopener noreferrer';
-      el.setAttribute('aria-label', `Open ${doc.name}`);
-    } else {
-      el.setAttribute('aria-label', `${doc.name} — not yet linked`);
-    }
-    el.innerHTML =
-        `<span class="doc-icon" aria-hidden="true">${esc(doc.icon)}</span>`
-      + `<span class="doc-name">${esc(doc.name)}</span>`
-      + (!hasUrl ? `<span class="doc-na">Not linked yet</span>` : '');
-    grid.appendChild(el);
-  });
+  section.items.forEach(item => grid.appendChild(renderItemCard(item)));
 
   showScreen('person');
 }
 
+function renderItemCard(item) {
+  const iconHtml = ICON_SVGS[item.icon]
+    ? `<span class="doc-icon" aria-hidden="true">${iconSvg(item.icon)}</span>`
+    : `<span class="doc-icon emoji" aria-hidden="true">${esc(item.icon || '📄')}</span>`;
+  const descHtml = item.description ? `<span class="doc-desc">${esc(item.description)}</span>` : '';
+
+  if (item.kind === 'pending') {
+    const el = document.createElement('div');
+    el.className = 'doc-btn inactive';
+    el.setAttribute('role', 'listitem');
+    el.setAttribute('aria-label', `${item.title} — not added yet`);
+    el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml + `<span class="doc-na">Not added yet</span>`;
+    return el;
+  }
+
+  if (item.kind === 'link') {
+    const el = document.createElement('a');
+    el.className = 'doc-btn';
+    el.href = item.url; el.target = '_blank'; el.rel = 'noopener noreferrer';
+    el.setAttribute('role', 'listitem');
+    el.setAttribute('aria-label', `Open ${item.title}`);
+    const thumbHtml = item.thumb ? `<img class="doc-thumb" alt="">` : '';
+    el.innerHTML = thumbHtml + iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml;
+    if (item.thumb) loadThumb(el, item.thumb);
+    return el;
+  }
+
+  // kind === 'file'
+  const el = document.createElement('button');
+  el.className = 'doc-btn';
+  el.type = 'button';
+  el.setAttribute('role', 'listitem');
+  el.setAttribute('aria-label', `Open ${item.title}`);
+  el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml;
+  el.addEventListener('click', () => openFileItem(el, item, iconHtml, descHtml));
+  return el;
+}
+
+async function loadThumb(linkEl, thumb) {
+  try {
+    const blob = await decryptFile(thumb);
+    const url = URL.createObjectURL(blob);
+    objectUrls.push(url);
+    const img = linkEl.querySelector('img.doc-thumb');
+    if (img) img.src = url;
+  } catch { /* thumb is decorative — silently skip on failure */ }
+}
+
+async function openFileItem(el, item, iconHtml, descHtml) {
+  const original = el.innerHTML;
+  el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml + `<div class="spinner-dark"></div>`;
+  try {
+    const blob = await decryptFile(item);
+    const url = URL.createObjectURL(blob);
+    objectUrls.push(url);
+    const isViewable = /^image\//.test(item.mime) || item.mime === 'application/pdf';
+    if (isViewable) {
+      window.open(url, '_blank', 'noopener');
+    } else {
+      const a = document.createElement('a');
+      a.href = url; a.download = item.title || 'document';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    el.innerHTML = original;
+  } catch {
+    el.innerHTML = original;
+    el.classList.add('err');
+    setTimeout(() => el.classList.remove('err'), 500);
+  }
+}
+
 function goFamily() { bump(); showScreen('family'); }
 
-// ── BACK BUTTON TRAP ──────────────────────────────────────────────────────
+// ── PARALLAX (respects prefers-reduced-motion) ──
+(function initParallax() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const pairs = [
+    ['screen-family', 'hero-layer-family'],
+    ['screen-person', 'hero-layer-person'],
+  ];
+  pairs.forEach(([screenId, layerId]) => {
+    const screenEl = document.getElementById(screenId);
+    const layerEl = document.getElementById(layerId);
+    let raf = null;
+    screenEl.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        const y = Math.min(screenEl.scrollTop, 200);
+        layerEl.style.transform = `translateY(${y * 0.25}px)`;
+        raf = null;
+      });
+    }, { passive: true });
+  });
+})();
+
+// ── BACK BUTTON TRAP ──
 history.pushState(null, '', location.pathname);
 window.addEventListener('popstate', () => {
   history.pushState(null, '', location.pathname);
