@@ -9,7 +9,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#FCF9EA" />
-  <title>Family Portal</title>
+  <title>Family Portal · zerostress.in</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%92%3C/text%3E%3C/svg%3E" />
   <style>
     /* ── RESET & BASE ── */
     *, *::before, *::after {
@@ -99,7 +100,7 @@
       66%      { transform: translate(-22px,20px) scale(0.94); }
     }
     @media (prefers-reduced-motion: reduce) {
-      .orb, .hero-bg-layer { animation: none !important; transition: none !important; }
+      .orb, .hero-bg-layer, .hello-word-sm, .portal-title, .portal-sub, .skel-line { animation: none !important; transition: none !important; }
     }
 
     /* ── SCREENS ── */
@@ -129,17 +130,32 @@
     ══════════════════════════════════════ */
     #screen-welcome { gap: 48px; }
     .welcome-head { text-align: center; }
-    .hello-word {
+    .hello-word-sm {
       font-family: var(--sans);
-      font-size: clamp(64px, 14vw, 108px);
+      font-size: clamp(16px, 2.4vw, 20px);
+      font-weight: 600; font-style: italic;
+      color: var(--text-2); opacity: 0.85; margin-bottom: 10px;
+    }
+    .portal-title {
+      font-family: var(--sans);
+      font-size: clamp(34px, 9vw, 88px);
       font-weight: 700; font-style: italic;
-      letter-spacing: -0.035em; line-height: 1;
-      color: var(--text); margin-bottom: 12px;
+      letter-spacing: -0.03em; line-height: 1;
+      color: var(--text); margin: 0 0 10px;
+      white-space: nowrap;
     }
-    .portal-label {
-      font-size: clamp(11px, 2vw, 14px); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-2);
+    .portal-sub {
+      font-size: clamp(13px, 2.4vw, 16px); font-weight: 500;
+      letter-spacing: 0.01em; color: var(--text-2);
     }
+    @keyframes heroFadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hello-word-sm, .portal-title, .portal-sub { animation: heroFadeUp 0.5s var(--ease) both; }
+    .hello-word-sm { animation-delay: 0s; }
+    .portal-title  { animation-delay: 0.08s; }
+    .portal-sub    { animation-delay: 0.16s; }
 
     .group-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 760px; }
 
@@ -236,6 +252,15 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .pw-progress { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+    .skel-line {
+      height: 10px; border-radius: var(--r-full); width: 100%;
+      background: linear-gradient(90deg, var(--border) 25%, var(--border-md) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
     /* ══════════════════════════════════════
        SCREEN 3 & 4 — SHARED PAGE / HERO
     ══════════════════════════════════════ */
@@ -285,6 +310,7 @@
     .section-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); padding: 0 4px; }
 
     .members-list { display: flex; flex-direction: column; gap: 10px; }
+    .empty-state { padding: 28px 12px; text-align: center; color: var(--text-2); font-size: 13.5px; }
 
     .member-btn {
       display: flex; align-items: center; gap: 14px; padding: 14px 18px;
@@ -339,6 +365,7 @@
     .person-sub  { font-size: 12px; color: var(--text-2); margin-top: 3px; }
 
     .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .docs-grid.empty { display: block; }
 
     .doc-btn {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -387,11 +414,27 @@
     .fv-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 0 12px 12px; }
     .fv-body img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--r-sm); }
 
+    .fv-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .fv-btn {
+      background: rgba(255,255,255,0.14); color: #fff; border: none; border-radius: var(--r-sm);
+      font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 8px 14px; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: background 0.2s;
+    }
+    .fv-btn:hover { background: rgba(255,255,255,0.24); }
+
+    .fv-generic { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #fff; text-align: center; padding: 40px 20px; }
+    .fv-generic-icon { font-size: 56px; line-height: 1; }
+    .fv-generic-title { font-size: 16px; font-weight: 700; }
+    .fv-generic-hint { font-size: 13px; color: rgba(255,255,255,0.65); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 500px) {
       .group-cards { flex-direction: column; align-items: center; }
       .group-card  { max-width: 340px; width: 100%; }
-      .hello-word  { font-size: 60px; }
+    }
+    @media (max-width: 360px) {
+      .portal-title { font-size: 30px; letter-spacing: -0.02em; }
     }
     @media (max-width: 340px) { .docs-grid { grid-template-columns: 1fr; } }
     @media (min-width: 700px) {
@@ -411,8 +454,9 @@
 <!-- SCREEN 1 — WELCOME -->
 <div id="screen-welcome" class="screen active" role="main" aria-label="Welcome">
   <div class="welcome-head">
-    <div class="hello-word">Hello.</div>
-    <div class="portal-label">Family Portal</div>
+    <div class="hello-word-sm">Hello.</div>
+    <h1 class="portal-title">Family Portal</h1>
+    <div class="portal-sub">Instant Access to Key Docs</div>
   </div>
   <div class="group-cards" id="group-cards" role="list"></div>
 </div>
@@ -429,6 +473,11 @@
     <div class="pw-hint">Enter the password to continue</div>
     <input type="password" id="pw-input" class="pw-input" placeholder="Password" autocomplete="off" aria-label="Password" onkeydown="onPwKey(event)" />
     <button class="btn-unlock" id="btn-unlock" onclick="tryUnlock()">Unlock</button>
+    <div class="pw-progress" id="pw-progress" hidden aria-hidden="true">
+      <div class="skel-line"></div>
+      <div class="skel-line" style="width:70%"></div>
+      <div class="skel-line" style="width:85%"></div>
+    </div>
     <div class="pw-lockout" id="pw-lockout" role="alert" aria-live="assertive"></div>
     <div class="pw-error"   id="pw-error"   role="alert" aria-live="polite"></div>
   </div>
@@ -487,7 +536,11 @@
 <div id="file-viewer" class="file-viewer" hidden role="dialog" aria-modal="true">
   <div class="fv-bar">
     <span class="fv-title" id="fv-title"></span>
-    <button class="fv-close" onclick="closeFileViewer()">✕ Close</button>
+    <div class="fv-actions">
+      <a class="fv-btn" id="fv-download" download aria-label="Download document">⬇ Download</a>
+      <button class="fv-btn" id="fv-share" type="button" hidden onclick="shareActiveFile()" aria-label="Share document">↗ Share</button>
+      <button class="fv-close" onclick="closeFileViewer()">✕ Close</button>
+    </div>
   </div>
   <div class="fv-body" id="fv-body"></div>
 </div>
@@ -682,6 +735,7 @@ async function tryUnlock() {
 
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div>';
+  document.getElementById('pw-progress').hidden = false;
   hideError(); hideLockout();
 
   try {
@@ -719,6 +773,7 @@ async function tryUnlock() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Unlock';
+    document.getElementById('pw-progress').hidden = true;
   }
 }
 
@@ -775,12 +830,16 @@ function renderFamilyScreen(data) {
 
   const list = document.getElementById('members-list');
   list.innerHTML = '';
+  if (data.sections.length === 0) {
+    const label = data.layout === 'people' ? 'members' : 'categories';
+    list.innerHTML = `<div class="empty-state">No ${label} added yet.</div>`;
+    return;
+  }
   data.sections.forEach((s, i) => {
     const btn = document.createElement('button');
     btn.className = 'member-btn';
     btn.setAttribute('role', 'listitem');
     btn.setAttribute('aria-label', `Open ${s.label}`);
-    btn.style.transitionDelay = (i * 45) + 'ms';
     btn.innerHTML =
         avatarHtml(s, 'lg', i)
       + `<div class="member-info">`
@@ -821,7 +880,12 @@ function openSection(groupData, section, colorIdx) {
 
   const grid = document.getElementById('docs-grid');
   grid.innerHTML = '';
-  section.items.forEach(item => grid.appendChild(renderItemCard(item)));
+  grid.classList.toggle('empty', section.items.length === 0);
+  if (section.items.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No documents added yet.</div>';
+  } else {
+    section.items.forEach(item => grid.appendChild(renderItemCard(item)));
+  }
 
   showScreen('person');
 }
@@ -878,53 +942,89 @@ async function loadThumb(linkEl, thumb) {
   } catch { /* thumb is decorative — silently skip on failure */ }
 }
 
+let fvActive = null; // { blob, filename, mime } for the file currently in the viewer — cleared on close
+
 async function openFileItem(el, item, iconHtml, descHtml) {
   const original = el.innerHTML;
   el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>` + descHtml + `<div class="spinner-dark"></div>`;
-  // Only images use the in-page viewer. PDFs download directly instead of
-  // rendering in an iframe — Safari's inline blob-PDF rendering is
-  // known-flaky, and a direct download is simpler, faster, and reliable
-  // everywhere rather than chasing another Safari-only rendering path.
-  // Very large images fall through to download too — decoding a huge photo
-  // into an in-page <img> is the same class of memory pressure that caused
-  // the mobile crash earlier, just triggered by pixels instead of CSS.
+  // Images render inline in the viewer. Everything else (PDFs, docs, large
+  // images) gets a generic "ready to share" card instead of an <img> —
+  // Safari's inline blob-PDF rendering is known-flaky, and decoding a huge
+  // photo into an <img> risks the same memory pressure that caused a mobile
+  // crash before. Every kind still opens the viewer, though, so Share/
+  // Download/AirDrop is available for every document, not just images.
   const MAX_INLINE_IMAGE_BYTES = 15 * 1024 * 1024;
   const isViewable = /^image\//.test(item.mime) && (item.size || 0) <= MAX_INLINE_IMAGE_BYTES;
   try {
     const blob = await decryptFile(item);
-    const url = URL.createObjectURL(blob);
-    objectUrls.push(url);
-    if (isViewable) {
-      // Rendered in-page, in this same document — a new tab/window needs
-      // window.open(), and a Blob URL created here does not reliably resolve
-      // once handed to a *different* browsing context (confirmed broken on
-      // mobile Safari: the popup opened, but stayed on about:blank because
-      // Safari would not load a blob: URL created by the opener). Viewing it
-      // inline sidesteps that entirely, and also needs no popup at all.
-      openFileViewer(item, url);
-    } else {
-      const a = document.createElement('a');
-      a.href = url; a.download = downloadName(item);
-      document.body.appendChild(a); a.click(); a.remove();
-    }
+    openFileViewer(item, blob, isViewable);
     el.innerHTML = original;
   } catch {
-    el.innerHTML = original;
+    el.innerHTML = iconHtml + `<span class="doc-title">${esc(item.title)}</span>`
+      + `<span class="doc-desc" style="color:#B03020">Couldn't open — check your connection and try again.</span>`;
     el.classList.add('err');
-    setTimeout(() => el.classList.remove('err'), 500);
+    setTimeout(() => { el.innerHTML = original; el.classList.remove('err'); }, 2200);
   }
 }
 
-function openFileViewer(item, url) {
+function openFileViewer(item, blob, isViewable) {
+  // Rendered in-page, in this same document — a new tab/window needs
+  // window.open(), and a Blob URL created here does not reliably resolve
+  // once handed to a *different* browsing context (confirmed broken on
+  // mobile Safari: the popup opened, but stayed on about:blank because
+  // Safari would not load a blob: URL created by the opener).
+  const url = URL.createObjectURL(blob);
+  objectUrls.push(url);
+  const filename = downloadName(item);
+  const mime = item.mime || 'application/octet-stream';
+
   document.getElementById('fv-title').textContent = item.title || 'Document';
-  document.getElementById('fv-body').innerHTML = `<img src="${esc(url)}" alt="${esc(item.title || 'Document')}" />`;
+  document.getElementById('fv-body').innerHTML = isViewable
+    ? `<img src="${esc(url)}" alt="${esc(item.title || 'Document')}" />`
+    : `<div class="fv-generic">`
+      + `<div class="fv-generic-icon" aria-hidden="true">📄</div>`
+      + `<div class="fv-generic-title">${esc(item.title || 'Document')}</div>`
+      + `<div class="fv-generic-hint">Use Download or Share above to save this file.</div>`
+      + `</div>`;
+
+  const dl = document.getElementById('fv-download');
+  dl.href = url; dl.download = filename;
+
+  fvActive = { blob, filename, mime };
+  const shareBtn = document.getElementById('fv-share');
+  // Feature-detect per file — Safari on Windows/Android/older iOS has no
+  // navigator.share at all, or rejects certain file types; the button only
+  // renders when the browser actually confirms it can handle this file, so
+  // there's never a Share button that fails when tapped.
+  const canShare = !!(navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: mime })] }));
+  shareBtn.hidden = !canShare;
+
   document.getElementById('file-viewer').hidden = false;
   bump();
+}
+
+async function shareActiveFile() {
+  if (!fvActive) return;
+  try {
+    const file = new File([fvActive.blob], fvActive.filename, { type: fvActive.mime });
+    // Called synchronously from the Share button's own click handler (no
+    // await before it) — Safari revokes the share permission if it's called
+    // after any prior await, since that breaks the "direct user gesture"
+    // requirement for navigator.share.
+    await navigator.share({ files: [file], title: fvActive.filename });
+  } catch (err) {
+    // AbortError just means the user closed the share sheet without picking
+    // anything — not a failure. Download remains available either way.
+    if (err && err.name !== 'AbortError') { /* no-op: Download button still works */ }
+  }
 }
 
 function closeFileViewer() {
   document.getElementById('file-viewer').hidden = true;
   document.getElementById('fv-body').innerHTML = '';
+  document.getElementById('fv-download').removeAttribute('href');
+  document.getElementById('fv-share').hidden = true;
+  fvActive = null;
 }
 
 function goFamily() { bump(); showScreen('family'); }

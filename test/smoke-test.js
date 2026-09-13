@@ -137,24 +137,35 @@ async function main() {
     record('closing the viewer hides it again',
       await waitFor(() => session.executeScript(`return getComputedStyle(document.getElementById('file-viewer')).display === 'none';`)));
 
-    // 5. Oversized image (>15MB metadata) falls through to download, with the right extension.
+    // 5. Oversized image (>15MB metadata) opens the viewer as a generic card
+    // (no inline iframe/<img> decode), with Share/Download available — it no
+    // longer auto-downloads, so an emergency share/AirDrop moment exists for
+    // every file type, not just small images.
     await session.executeScript(`[...document.querySelectorAll('.doc-btn')].find(b => b.textContent.includes('Big Image')).click();`);
-    await sleep(1200);
+    const bigViewerOpened = await waitFor(() => session.executeScript(`return getComputedStyle(document.getElementById('file-viewer')).display !== 'none';`), 8000);
+    const bigIsGeneric = bigViewerOpened && await session.executeScript(`return !document.querySelector('#fv-body img') && !!document.querySelector('.fv-generic');`);
+    record('oversized image opens the generic viewer card, not an inline image', bigIsGeneric === true);
+    await session.executeScript(`document.getElementById('fv-download').click();`);
     const bigImageDownload = await session.executeScript(`return window.__downloads.includes('Big Image.png');`);
-    const viewerStillHidden1 = await session.executeScript(`return getComputedStyle(document.getElementById('file-viewer')).display === 'none';`);
-    record('oversized image downloads instead of opening the viewer', bigImageDownload === true && viewerStillHidden1 === true);
+    record('oversized image downloads the right filename via the Download button', bigImageDownload === true);
+    await session.executeScript(`closeFileViewer();`);
 
-    // 6. PDF downloads directly (no inline iframe attempt) with a .pdf extension.
+    // 6. PDF opens the generic viewer card (no inline iframe attempt) and
+    // downloads with a .pdf extension via the Download button.
     await session.executeScript(`[...document.querySelectorAll('.doc-btn')].find(b => b.textContent.includes('Sample Document')).click();`);
-    await sleep(1200);
+    await waitFor(() => session.executeScript(`return getComputedStyle(document.getElementById('file-viewer')).display !== 'none';`), 8000);
+    await session.executeScript(`document.getElementById('fv-download').click();`);
     const pdfDownload = await session.executeScript(`return window.__downloads.includes('Sample Document.pdf');`);
-    record('PDF downloads with a .pdf extension', pdfDownload === true);
+    record('PDF opens the viewer and downloads with a .pdf extension', pdfDownload === true);
+    await session.executeScript(`closeFileViewer();`);
 
-    // 7. CSV downloads with a .csv extension.
+    // 7. CSV opens the generic viewer card and downloads with a .csv extension via the Download button.
     await session.executeScript(`[...document.querySelectorAll('.doc-btn')].find(b => b.textContent.includes('Sample Sheet')).click();`);
-    await sleep(1200);
+    await waitFor(() => session.executeScript(`return getComputedStyle(document.getElementById('file-viewer')).display !== 'none';`), 8000);
+    await session.executeScript(`document.getElementById('fv-download').click();`);
     const csvDownload = await session.executeScript(`return window.__downloads.includes('Sample Sheet.csv');`);
-    record('CSV downloads with a .csv extension', csvDownload === true);
+    record('CSV opens the viewer and downloads with a .csv extension', csvDownload === true);
+    await session.executeScript(`closeFileViewer();`);
 
     // 8. Locking clears state and returns to the welcome screen.
     await session.executeScript(`doLock();`);

@@ -89,7 +89,11 @@ function timingSafeStrEqual(a, b) {
 }
 function checkAuth(req, url) {
   const originHeader = req.headers.origin;
-  if (originHeader && originHeader !== `http://127.0.0.1:${PORT}`) return false;
+  // Accept both loopback hostnames — Safari's HTTPS-Only Mode can force
+  // 'localhost' instead of '127.0.0.1' for the page itself; both resolve to
+  // the same loopback-only bind below, so neither widens what can reach us.
+  const validOrigins = [`http://127.0.0.1:${PORT}`, `http://localhost:${PORT}`];
+  if (originHeader && !validOrigins.includes(originHeader)) return false;
   const headerToken = req.headers['x-admin-token'];
   const queryToken = url.searchParams.get('t');
   const supplied = headerToken || queryToken || '';
@@ -305,6 +309,10 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`);
 
   if (!checkAuth(req, url)) {
+    // Drain any in-flight body before responding — otherwise a rejected
+    // request with a large payload (e.g. a photo upload) races the response
+    // and the connection gets reset instead of delivering this error.
+    req.resume();
     return sendJson(res, 403, { error: 'Forbidden — missing or invalid admin token' });
   }
 
